@@ -1,0 +1,13 @@
+[project]
+name = "canarybrake"
+version = "1.0.0"
+description = "Cross-system canary checkout incident & revenue-rescue copilot powered by Synapse MCP"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = [
+  "services/order-replayer/tests",
+  "services/payment-sla-ledger/tests",
+  "tests",
+  "services/copilot-console/tests",
+]
