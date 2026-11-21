@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0d0e10" id="metaThemeColor" />
+<title>CanaryBrake — Checkout Incident &amp; Settlement Control Plane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ─── Studio Token System: Neutral Mineral Carbon & Architectural Paper ─── */
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d0e10;
+    --surface: #131518;
+    --surface-subtle: #181b1f;
+    --surface-hover: #1e2228;
+    --code-bg: #0a0b0d;
+    --line: #23272e;
+    --line-strong: #343a44;
+    --ink: #f3f4f6;
+    --ink-2: #a1a8b3;
+    --ink-3: #6e7683;
+    --cta-bg: #f3f4f6;
+    --cta-ink: #0d0e10;
+    --cta-hover: #ffffff;
+    --danger: #e5484d;
+    --danger-soft: rgba(229, 72, 77, 0.12);
+    --danger-border: rgba(229, 72, 77, 0.34);
+    --ok: #30a46c;
+    --ok-soft: rgba(48, 164, 108, 0.12);
+    --ok-border: rgba(48, 164, 108, 0.34);
+    --warn: #f5a623;
+    --warn-soft: rgba(245, 166, 35, 0.12);
+    --warn-border: rgba(245, 166, 35, 0.34);
+    --info: #3e63dd;
+    --info-soft: rgba(62, 99, 221, 0.14);
+    --info-border: rgba(62, 99, 221, 0.38);
+    --focus-ring: #5b8def;
+    --shadow-elev: 0 20px 50px rgba(0, 0, 0, 0.55);
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface-subtle: #f2f4f7;
+    --surface-hover: #eaecf0;
+    --code-bg: #111317;
+    --line: #e4e7ec;
+    --line-strong: #cfd4dc;
+    --ink: #101828;
+    --ink-2: #475467;
+    --ink-3: #667085;
+    --cta-bg: #101828;
+    --cta-ink: #ffffff;
+    --cta-hover: #1d2939;
+    --danger: #d92d20;
+    --danger-soft: #fef3f2;
+    --danger-border: #fecdca;
+    --ok: #067647;
+    --ok-soft: #ecfdf3;
+    --ok-border: #abefc6;
+    --warn: #b54708;
+    --warn-soft: #fffaeb;
+    --warn-border: #fedf89;
+    --info: #2952cc;
+    --info-soft: #eff4ff;
+    --info-border: #b2ccff;
+    --focus-ring: #2952cc;
+    --shadow-elev: 0 20px 48px rgba(16, 24, 40, 0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13.5px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* ─── Application Top Shell ─── */
+  .app-header {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+
+  .brand-cluster {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background-color: var(--ink);
+    color: var(--surface);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .divider-v {
+    width: 1px;
+    height: 18px;
+    background-color: var(--line);
+  }
+
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: var(--ok-soft);
+    border: 1px solid var(--ok-border);
+    color: var(--ok);
+  }
+
+  .status-indicator.incident {
+    background-color: var(--danger-soft);
+    border-color: var(--danger-border);
+    color: var(--danger);
+  }
+
+  .status-dot {
+    width: 6.5px;
+    height: 6.5px;
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  /* ─── Precision Buttons ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease, opacity 0.14s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn:hover:not(:disabled) {
+    background-color: var(--surface-hover);
+    border-color: var(--line-strong);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background-color: var(--cta-bg);
+    border-color: var(--cta-bg);
+    color: var(--cta-ink);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--cta-hover);
+    border-color: var(--cta-hover);
+  }
+
+  .btn-active-stream {
+    background-color: var(--ok-soft);
+    border-color: var(--ok-border);
+    color: var(--ok);
+  }
+
+  .btn-ghost {
+    border-color: transparent;
+    background-color: transparent;
+    color: var(--ink-2);
+    padding: 0 9px;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--surface-subtle);
+    border-color: transparent;
+    color: var(--ink);
+  }
+
+  .icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .spinner-svg {
+    width: 13px;
+    height: 13px;
+    animation: rotateSpin 0.75s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes rotateSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ─── Architectural Metric Strip + Signature Proportion Bar ─── */
+  .telemetry-strip {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .metric-cell {
+    padding: 11px 24px;
+    border-right: 1px solid var(--line);
+    min-width: 0;
+  }
+
+  .metric-cell:last-child {
+    border-right: none;
+  }
+
+  .metric-cell.alert-cell {
+    background-color: var(--danger-soft);
+  }
+
+  .metric-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .metric-value {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-top: 2px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-cell.alert-cell .metric-value {
+    color: var(--danger);
+  }
+
+  .metric-meta {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Signature Visual Element: Live Settlement Distribution Bar */
+  .proportion-bar-wrap {
+    padding: 6px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: var(--bg);
+  }
+
+  .proportion-track {
+    flex: 1;
+    height: 5px;
+    background-color: var(--surface-subtle);
+    border-radius: 999px;
+    overflow: hidden;
+    display: flex;
+    gap: 1px;
+  }
+
+  .prop-seg {
+    height: 100%;
+    transition: width 0.35s ease;
+  }
+
+  .prop-legend {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    flex-shrink: 0;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .legend-swatch {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+  }
+
+  /* ─── Primary Navigation Tabs ─── */
+  .nav-bar {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .tab-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .tab-item {
+    height: 40px;
+    padding: 0 14px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--ink-2);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: color 0.14s ease, border-color 0.14s ease;
+  }
+
+  .tab-item:hover {
+    color: var(--ink);
+  }
+
+  .tab-item.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+    font-weight: 600;
+  }
+
+  .count-chip {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background-color: var(--surface-subtle);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .count-chip.danger {
+    background-color: var(--danger-soft);
+    border-color: var(--danger-border);
+    color: var(--danger);
+  }
+
+  .count-chip.ok {
+    background-color: var(--ok-soft);
+    border-color: var(--ok-border);
+    color: var(--ok);
+  }
+
+  .mcp-summary-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+
+  .mcp-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--line);
+    background-color: var(--surface-subtle);
+    font-size: 11.5px;
+  }
+
+  .mcp-node.evolved {
+    border-color: var(--ok-border);
+    background-color: var(--ok-soft);
+    color: var(--ok);
+  }
+
+  /* ─── Main Workspace Panes ─── */
+  .workspace {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .pane-view {
+    display: none;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+
+  .pane-view.active {
+    display: block;
+  }
+
+  /* ─── Tab 1: Incident Copilot Workbench ─── */
+  .copilot-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .sidebar-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .panel {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .panel-subtitle {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+
+  /* Sequential Runbook */
+  .runbook {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .runbook-step {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 11px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink);
+    transition: background-color 0.14s ease;
+  }
+
+  .runbook-step:last-child {
+    border-bottom: none;
+  }
+
+  .runbook-step:hover {
+    background-color: var(--surface-subtle);
+  }
+
+  .step-index {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-2);
+    font-size: 11px;
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .runbook-step.completed .step-index {
+    background-color: var(--ok);
+    border-color: var(--ok);
+    color: #ffffff;
+  }
+
+  .step-content-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .step-content-desc {
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-top: 2px;
+    line-height: 1.42;
+  }
+
+  /* Copilot Thread */
+  .chat-panel {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .turn {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 78ch;
+  }
+
+  .turn.user-turn {
+    align-self: flex-end;
+    max-width: 68ch;
+  }
+
+  .turn-role {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .turn.user-turn .turn-role {
+    text-align: right;
+  }
+
+  .turn-body {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .turn.user-turn .turn-body {
+    background-color: var(--surface-subtle);
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    border-radius: 8px;
+  }
+
+  .turn-body h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 10px 0 6px;
+    text-wrap: balance;
+  }
+
+  .turn-body ul {
+    margin: 6px 0 8px 18px;
+  }
+
+  .turn-body li {
+    margin-bottom: 4px;
+  }
+
+  .turn-body code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background-color: var(--surface-subtle);
+    border: 1px solid var(--line);
+  }
+
+  .md-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 12.5px;
+    border: 1px solid var(--line);
+  }
+
+  .md-table th, .md-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    text-align: left;
+  }
+
+  .md-table th {
+    background-color: var(--surface-subtle);
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+
+  /* Tool Call Provenance Disclosures */
+  .trace-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  details.trace-row {
+    border: 1px solid var(--line);
+    background-color: var(--surface-subtle);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  details.trace-row summary {
+    padding: 6px 10px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  details.trace-row summary::-webkit-details-marker { display: none; }
+
+  details.trace-row pre {
+    padding: 10px 12px;
+    background-color: var(--code-bg);
+    color: #d1d5db;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    line-height: 1.5;
+    overflow-x: auto;
+    max-height: 200px;
+    border-top: 1px solid var(--line);
+  }
+
+  .source-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink-2);
+    background-color: var(--surface);
+  }
+
+  .chat-form {
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+    background-color: var(--surface);
+    display: flex;
+    gap: 8px;
+  }
+
+  .chat-input {
+    flex: 1;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 13.5px;
+  }
+
+  .chat-input::placeholder {
+    color: var(--ink-3);
+  }
+
+  /* ─── Silo Architecture Context Note ─── */
+  .context-bar {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .context-bar p {
+    color: var(--ink-2);
+    font-size: 12.5px;
+    max-width: 82ch;
+  }
+
+  /* ─── Flag Rollout Grid (Tab 2) ─── */
+  .flag-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+
+  .flag-cell {
+    padding: 16px 18px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flag-cell:last-child { border-right: none; }
+
+  .meter-track {
+    height: 4px;
+    background-color: var(--surface-subtle);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .meter-fill {
+    height: 100%;
+    background-color: var(--ink);
+  }
+
+  .quarantine-note {
+    margin-top: 4px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    background-color: var(--ok-soft);
+    border: 1px solid var(--ok-border);
+    color: var(--ok);
+    font-size: 11.5px;
+  }
+
+  /* ─── Data Tables (Tabs 2, 3, 4) ─── */
+  .table-section {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+
+  .segmented {
+    display: inline-flex;
+    background-color: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .seg-btn {
+    border: none;
+    background: transparent;
+    color: var(--ink-2);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .seg-btn.active {
+    background-color: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  }
+
+  table.clean-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  table.clean-table th {
+    text-align: left;
+    padding: 9px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-2);
+    background-color: var(--surface-subtle);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  table.clean-table td {
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  table.clean-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  table.clean-table tbody tr:hover td {
+    background-color: var(--surface-subtle);
+  }
+
+  /* Subtle Semantic Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 11.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .badge-ok { background-color: var(--ok-soft); color: var(--ok); border: 1px solid var(--ok-border); }
+  .badge-danger { background-color: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-border); }
+  .badge-warn { background-color: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn-border); }
+  .badge-info { background-color: var(--info-soft); color: var(--info); border: 1px solid var(--info-border); }
+  .badge-neutral { background-color: var(--surface-subtle); color: var(--ink-2); border: 1px solid var(--line); }
+
+  /* ─── Tab 4: Live Discovery Workbench ─── */
+  .discover-workbench {
+    display: grid;
+    grid-template-columns: 1fr 1.12fr;
+    gap: 18px;
+  }
+
+  .code-block {
+    padding: 14px 16px;
+    background-color: var(--code-bg);
+    color: #e5e7eb;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+
+  .terminal-block {
+    min-height: 260px;
+    max-height: 380px;
+    overflow-y: auto;
+  }
+
+  /* ─── Operation Stepper Carousel Modal ─── */
+  .modal-layer {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(8, 9, 12, 0.68);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    overscroll-behavior: contain;
+  }
+
+  .modal-layer.open {
+    display: flex;
+  }
+
+  .stepper-dialog {
+    width: min(660px, 92vw);
+    background-color: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow-elev);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stepper-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .stepper-progress {
+    height: 3px;
+    background-color: var(--surface-subtle);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .stepper-progress-bar {
+    height: 100%;
+    background-color: var(--ink);
+    transition: width 0.25s ease;
+  }
+
+  .stepper-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+    gap: 10px;
+  }
+
+  .step-tile {
+    padding: 11px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background-color: var(--bg);
+    opacity: 0.5;
+    transition: opacity 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .step-tile.active {
+    opacity: 1;
+    border-color: var(--ink);
+    background-color: var(--surface-subtle);
+  }
+
+  .step-tile.done {
+    opacity: 0.9;
+    border-color: var(--ok-border);
+    background-color: var(--ok-soft);
+  }
+
+  .step-tile-title {
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink);
+  }
+
+  .step-tile-desc {
+    font-size: 11.5px;
+    color: var(--ink-2);
+    margin-top: 4px;
+    line-height: 1.38;
+  }
+
+  /* ─── Polite Live Toast Stack ─── */
+  .toast-region {
+    position: fixed;
+    bottom: 18px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .toast-card {
+    background-color: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-left: 3px solid var(--ok);
+    color: var(--ink);
+    padding: 10px 14px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    box-shadow: var(--shadow-elev);
+    max-width: 400px;
+  }
+
+  .toast-card.error {
+    border-left-color: var(--danger);
+  }
+
+  @media (max-width: 1100px) {
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+    .copilot-layout, .discover-workbench, .flag-strip { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── APPLICATION HEADER ─── -->
+<header class="app-header">
+  <div class="brand-cluster">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M2.5 8h3l2-5 3 10 2-5h1" />
+      </svg>
+    </div>
+    <span class="brand-name" translate="no">CanaryBrake</span>
+    <span class="divider-v" aria-hidden="true"></span>
+    <div id="incidentBadge" class="status-indicator" role="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="incidentText">All cohorts healthy</span>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button type="button" class="btn" id="btnStream" onclick="toggleStream()">
+      <svg class="icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 3.2l8 4.8-8 4.8V3.2z"/></svg>
+      <span>Stream traffic (5/s)</span>
+    </button>
+
+    <button type="button" class="btn" id="btnStep60" onclick="stepRealOrders(60)">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3.5v9M3.5 8h9"/></svg>
+      <span>Replay 60 orders</span>
+    </button>
+
+    <button type="button" class="btn" id="btnRefreshMcp" onclick="refreshMcpWithCarousel()">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.4-3.7M13.5 2.5v2.8h-2.8"/></svg>
+      <span>Refresh MCP</span>
+    </button>
+
+    <button type="button" class="btn" id="btnResetDemo" onclick="resetDemoWithCarousel()">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.5-3.8M2.5 2.5v2.8h2.8"/></svg>
+      <span>Reset environment</span>
+    </button>
+
+    <span class="divider-v" aria-hidden="true"></span>
+
+    <button type="button" class="btn btn-ghost" id="btnTheme" onclick="toggleTheme()" aria-label="Toggle light or dark appearance">
+      <svg class="icon" id="themeIcon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <circle cx="8" cy="8" r="3.2"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1"/>
+      </svg>
+      <span id="themeLabel">Paper</span>
+    </button>
+
+    <a href="/classic" class="btn btn-ghost" title="Switch to the previous UI version">Classic view</a>
+  </div>
+</header>
+
+<!-- ─── ARCHITECTURAL METRIC STRIP & LIVE PROPORTION BAR ─── -->
+<section class="telemetry-strip" aria-label="Live checkout settlement metrics">
+  <div class="metrics-row">
+    <div class="metric-cell">
+      <div class="metric-label">Olist order stream</div>
+      <div class="metric-value num" id="ribDispatched">0</div>
+      <div class="metric-meta" id="ribStreamState">Paused at sequence #35,856</div>
+    </div>
+
+    <div class="metric-cell">
+      <div class="metric-label">Captured volume</div>
+      <div class="metric-value num" id="ribCaptured">$0.00</div>
+      <div class="metric-meta" id="ribCapturedSub">0 settled checkouts</div>
+    </div>
+
+    <div class="metric-cell" id="ribStrandedCard">
+      <div class="metric-label">Stranded bank holds</div>
+      <div class="metric-value num" id="ribStranded">$0.00</div>
+      <div class="metric-meta" id="ribStrandedSub">0 active authorization locks</div>
+    </div>
+
+    <div class="metric-cell">
+      <div class="metric-label">Rescued via replay</div>
+      <div class="metric-value num" id="ribReplayed">$0.00</div>
+      <div class="metric-meta" id="ribReplayedSub">0 replayed, 0 duplicate charges</div>
+    </div>
+
+    <div class="metric-cell">
+      <div class="metric-label">Synapse MCP surface</div>
+      <div class="metric-value num" id="ribMcpTools">9 tools</div>
+      <div class="metric-meta" id="ribMcpSub">3 stdio servers connected</div>
+    </div>
+  </div>
+
+  <!-- Signature Element: Real-Time Checkout Outcome Proportion Bar -->
+  <div class="proportion-bar-wrap">
+    <div class="proportion-track" aria-hidden="true">
+      <div class="prop-seg" id="segCaptured" style="width:75%;background-color:var(--ok);"></div>
+      <div class="prop-seg" id="segRetried" style="width:0%;background-color:var(--warn);"></div>
+      <div class="prop-seg" id="segReplayed" style="width:0%;background-color:var(--info);"></div>
+      <div class="prop-seg" id="segStranded" style="width:25%;background-color:var(--danger);"></div>
+    </div>
+    <div class="prop-legend">
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--ok);"></span><span id="legCaptured">Settled 0%</span></span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--warn);"></span><span id="legRetried">503 retried 0</span></span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--info);"></span><span id="legReplayed">Rescued 0%</span></span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--danger);"></span><span id="legStranded">Stranded 0%</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PRIMARY NAVIGATION TABS ─── -->
+<nav class="nav-bar" aria-label="Workspace sections">
+  <div class="tab-group" role="tablist">
+    <button type="button" role="tab" class="tab-item active" data-tab="command" aria-selected="true" onclick="switchTab('command')">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2.5" width="12" height="11" rx="2"/><path d="M5.5 6.5l2 1.5-2 1.5M9 9.5h2"/></svg>
+      <span>Incident Copilot</span>
+    </button>
+
+    <button type="button" role="tab" class="tab-item" data-tab="gateway" aria-selected="false" onclick="switchTab('gateway')">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2.5v11M3 3.5h8.5l-1.8 2.5 1.8 2.5H3"/></svg>
+      <span>Flag Gateway</span>
+      <span class="count-chip mono" id="badgeGateway" translate="no">Go :8081</span>
+    </button>
+
+    <button type="button" role="tab" class="tab-item" data-tab="ledger" aria-selected="false" onclick="switchTab('ledger')">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.8" y="3.5" width="12.4" height="9" rx="1.8"/><path d="M1.8 6.8h12.4"/></svg>
+      <span>Settlement Ledger</span>
+      <span class="count-chip" id="badgeLedger">0 stranded</span>
+    </button>
+
+    <button type="button" role="tab" class="tab-item" data-tab="discover" aria-selected="false" onclick="switchTab('discover')">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 1.8L3.5 9h4.2l-.7 5.2L12.5 7H8.3L9 1.8z"/></svg>
+      <span>Live Discovery</span>
+      <span class="count-chip" id="badgeDiscover">4 Go tools</span>
+    </button>
+  </div>
+
+  <div class="mcp-summary-strip" id="headerServerPills" aria-label="Connected MCP servers"></div>
+</nav>
+
+<!-- ─── WORKSPACE VIEWS ─── -->
+<main class="workspace">
+
+  <!-- ================= VIEW 1: INCIDENT COPILOT ================= -->
+  <section class="pane-view active" id="tab-command" role="tabpanel">
+    <div class="copilot-layout">
+      <aside class="sidebar-column">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Incident response runbook</span>
+            <span class="panel-subtitle">6 steps</span>
+          </div>
+          <div class="runbook">
+            <button type="button" class="runbook-step" id="stepCard1" onclick="runPlaybookStep(1)">
+              <span class="step-index">1</span>
+              <div>
+                <div class="step-content-title">Isolate root cause vs. false alarm</div>
+                <div class="step-content-desc">Correlate Go cohort HTTP status with Python holds to verify whether <code translate="no">smart_retry_v1</code> or <code translate="no">checkout_gateway_v2</code> is stranding funds.</div>
+              </div>
+            </button>
+
+            <button type="button" class="runbook-step" id="stepCard2" onclick="runPlaybookStep(2)">
+              <span class="step-index">2</span>
+              <div>
+                <div class="step-content-title">Audit double-charge hold locks</div>
+                <div class="step-content-desc">Check active bank authorization locks and <code translate="no">idempotency_key</code> records across impacted Tier-1 merchants.</div>
+              </div>
+            </button>
+
+            <button type="button" class="runbook-step" id="stepCard3" onclick="runPlaybookStep(3)">
+              <span class="step-index">3</span>
+              <div>
+                <div class="step-content-title">Verify pre-discovery capability gap</div>
+                <div class="step-content-desc">Request targeted merchant exclusion before any mutation route is exposed on the Go MCP server.</div>
+              </div>
+            </button>
+
+            <button type="button" class="runbook-step" id="stepCard4" onclick="switchTab('discover')">
+              <span class="step-index">4</span>
+              <div>
+                <div class="step-content-title">Run <code translate="no">synapse build --discover</code></div>
+                <div class="step-content-desc">Expose the merchant cohort-exclusion route in Go and update server <code translate="no">e2d50a55</code> in place from 4 to 5 tools.</div>
+              </div>
+            </button>
+
+            <button type="button" class="runbook-step" id="stepCard5" onclick="runPlaybookStep(4)">
+              <span class="step-index">5</span>
+              <div>
+                <div class="step-content-title">Quarantine cohort &amp; preview replay</div>
+                <div class="step-content-desc">Invoke the newly discovered Go exclusion tool and run dry-run hold inspection (<code translate="no">confirm=False</code>).</div>
+              </div>
+            </button>
+
+            <button type="button" class="runbook-step" id="stepCard6" onclick="runPlaybookStep(5)">
+              <span class="step-index">6</span>
+              <div>
+                <div class="step-content-title">Confirm replay &amp; issue receipt</div>
+                <div class="step-content-desc">Execute <code translate="no">confirm=True</code> to settle stranded holds idempotently and record a signed SHA-256 receipt.</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Cross-silo live state</span>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn-ghost" style="height:24px;font-size:11.5px;" onclick="switchTab('gateway')">Flag Gateway</button>
+              <button type="button" class="btn btn-ghost" style="height:24px;font-size:11.5px;" onclick="switchTab('ledger')">Ledger</button>
+            </div>
+          </div>
+          <div id="miniCrossSummary" style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;font-size:12.5px;"></div>
+        </div>
+      </aside>
+
+      <div class="chat-panel">
+        <div class="panel-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="panel-title">Cross-system investigation thread</span>
+            <span class="badge badge-neutral mono" translate="no">mcp-stdio</span>
+          </div>
+          <button type="button" class="btn btn-ghost" style="height:26px;font-size:12px;" onclick="clearChat()">Clear thread</button>
+        </div>
+
+        <div class="chat-messages" id="chatLog">
+          <div class="turn">
+            <div class="turn-role">CanaryBrake Copilot</div>
+            <div class="turn-body">
+              Connected to three Synapse MCP servers over <code translate="no">stdio</code>: <strong translate="no">flag-edge-gateway</strong> (Go 1.23 Hosted Auto), <strong translate="no">payment-sla-ledger</strong> (Python FastAPI Hosted Auto), and <strong translate="no">replay-stranded-merchant-holds</strong> (Python Custom workflow). Choose a runbook step on the left or ask a question spanning both services.
+            </div>
+          </div>
+        </div>
+
+        <form class="chat-form" onsubmit="submitChat(event)">
+          <label for="chatInput" class="sr-only">Ask a cross-system question across Flag Gateway and Settlement Ledger</label>
+          <input id="chatInput" name="prompt" class="chat-input" type="text" placeholder="Ask across Go Flag Gateway and Python Settlement Ledger…" autocomplete="off" />
+          <button type="submit" class="btn btn-primary" id="sendBtn">Send</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= VIEW 2: GO FLAG GATEWAY (:8081) ================= -->
+  <section class="pane-view" id="tab-gateway" role="tabpanel">
+    <div class="context-bar">
+      <div>
+        <strong style="font-size:13px;">System 1: Flag Edge Gateway (<span class="mono" translate="no">Go 1.23 · edge_flags.db</span>)</strong>
+        <p>Evaluates deterministic <span class="mono">SHA-256(flag_key:merchant_id) % 100</span> rollouts and records HTTP response codes and wall-clock latency. Has no access to customer bank holds, order amounts, or contractual SLA terms.</p>
+      </div>
+      <span class="badge badge-neutral mono" translate="no">SYNAPSE_SERVER_ID: e2d50a55-9ebc-4aee-8a17-b47ced0025aa</span>
+    </div>
+
+    <div class="flag-strip" id="fullFlagsGrid"></div>
+
+    <div class="table-section">
+      <div class="panel-header">
+        <span class="panel-title">Cohort HTTP status, retry recovery &amp; latency</span>
+      </div>
+      <table class="clean-table">
+        <thead>
+          <tr>
+            <th>Flag cohort</th>
+            <th>Active variant</th>
+            <th>Requests</th>
+            <th>200 OK</th>
+            <th>503 contention recovered</th>
+            <th>504 gateway timeout</th>
+            <th>p95 latency</th>
+            <th>504 merchants</th>
+          </tr>
+        </thead>
+        <tbody id="fullCohortTable"></tbody>
+      </table>
+    </div>
+
+    <div class="table-section">
+      <div class="panel-header">
+        <span class="panel-title">Recent checkout routing log</span>
+        <div class="segmented" id="edgeFilterPills" role="group" aria-label="Filter routing log">
+          <button type="button" class="seg-btn active" data-filter="ALL" onclick="setEdgeFilter('ALL')">All</button>
+          <button type="button" class="seg-btn" data-filter="504" onclick="setEdgeFilter('504')">504 timeouts</button>
+          <button type="button" class="seg-btn" data-filter="RETRY" onclick="setEdgeFilter('RETRY')">503 retries</button>
+        </div>
+      </div>
+      <table class="clean-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Merchant ID</th>
+            <th>Evaluated flag</th>
+            <th>Routed variant</th>
+            <th>HTTP transition</th>
+            <th>Retries</th>
+            <th>Latency</th>
+          </tr>
+        </thead>
+        <tbody id="fullEdgeStreamTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= VIEW 3: PYTHON SETTLEMENT LEDGER (:8082) ================= -->
+  <section class="pane-view" id="tab-ledger" role="tabpanel">
+    <div class="context-bar">
+      <div>
+        <strong style="font-size:13px;">System 2: Payment Authorization &amp; SLA Ledger (<span class="mono" translate="no">Python FastAPI · payment_ledger.db</span>)</strong>
+        <p>Manages <span class="mono">AUTHORIZED_HOLD</span> to <span class="mono">CAPTURED</span> / <span class="mono">HOLD_STRANDED</span> / <span class="mono">REPLAYED_SAFE</span> transitions, enforces <span class="mono">409 DOUBLE_CHARGE_PREVENTED</span> idempotency locks, and tracks Merchant SLA compliance. Has no visibility into feature-flag cohorts.</p>
+      </div>
+      <span class="badge badge-neutral mono" translate="no">SYNAPSE_SERVER_ID: 059607eb-feb9-4fa8-874e-907d522e6ebd</span>
+    </div>
+
+    <div class="table-section">
+      <div class="panel-header">
+        <span class="panel-title">Merchant contractual SLA watchlist</span>
+      </div>
+      <table class="clean-table">
+        <thead>
+          <tr>
+            <th>Olist merchant</th>
+            <th>Merchant ID</th>
+            <th>Contract tier</th>
+            <th>Orders</th>
+            <th>Capture rate vs. SLA</th>
+            <th>Stranded holds</th>
+            <th>SLA state</th>
+          </tr>
+        </thead>
+        <tbody id="fullSlaTable"></tbody>
+      </table>
+    </div>
+
+    <div class="table-section">
+      <div class="panel-header">
+        <span class="panel-title">Payment authorization &amp; settlement intents</span>
+        <div class="segmented" id="ledgerFilterPills" role="group" aria-label="Filter payment intents">
+          <button type="button" class="seg-btn active" data-filter="ALL" onclick="setLedgerFilter('ALL')">All</button>
+          <button type="button" class="seg-btn" data-filter="HOLD_STRANDED" onclick="setLedgerFilter('HOLD_STRANDED')">Stranded</button>
+          <button type="button" class="seg-btn" data-filter="REPLAYED_SAFE" onclick="setLedgerFilter('REPLAYED_SAFE')">Rescued</button>
+          <button type="button" class="seg-btn" data-filter="CAPTURED" onclick="setLedgerFilter('CAPTURED')">Captured</button>
+        </div>
+      </div>
+      <table class="clean-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Merchant</th>
+            <th>Tier</th>
+            <th>Payment method</th>
+            <th>Installments</th>
+            <th>Amount</th>
+            <th>Bank hold lock</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="fullLedgerIntentsTable"></tbody>
+      </table>
+    </div>
+
+    <div class="table-section">
+      <div class="panel-header">
+        <span class="panel-title">Signed SHA-256 idempotent replay receipts</span>
+      </div>
+      <table class="clean-table">
+        <thead>
+          <tr>
+            <th>Receipt ID</th>
+            <th>Merchants settled</th>
+            <th>Orders rescued</th>
+            <th>Settled amount</th>
+            <th>SHA-256 signature</th>
+            <th>Recorded (UTC)</th>
+          </tr>
+        </thead>
+        <tbody id="auditReceiptsTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= VIEW 4: LIVE DISCOVERY (synapse build --discover) ================= -->
+  <section class="pane-view" id="tab-discover" role="tabpanel">
+    <div class="context-bar">
+      <div>
+        <strong style="font-size:13px;">Live surface evolution via <span class="mono" translate="no">synapse build --discover</span></strong>
+        <p>Adds targeted merchant cohort exclusion to the Go gateway, performs an incremental tree-sitter rescan, updates Hosted Server <span class="mono" translate="no">e2d50a55-9ebc-4aee-8a17-b47ced0025aa</span> in place without changing client config, and reloads MCP sessions.</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn btn-primary" id="btnRunEnableDiscover" onclick="executeLiveDiscover('enable')">
+          Expose exclusion route &amp; run discover
+        </button>
+        <button type="button" class="btn" id="btnRunDisableDiscover" onclick="executeLiveDiscover('disable')">
+          Restore 4-tool baseline
+        </button>
+      </div>
+    </div>
+
+    <div class="discover-workbench">
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Connected MCP servers &amp; active tool schemas</span>
+          </div>
+          <div id="discoverRegistryCards" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title mono" translate="no">services/flag-edge-gateway/discover_routes.go</span>
+            <span class="badge badge-neutral" id="discoverSourceBadge">4-tool baseline</span>
+          </div>
+          <pre class="code-block" id="discoverGoSource">Loading source…</pre>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Synapse CLI build output</span>
+          </div>
+          <pre class="code-block terminal-block" id="discoverCliOutput">Select “Expose exclusion route &amp; run discover” above to enable POST /api/flags/{flag_key}/exclude-merchants/{merchant_ids}, rebuild the Go service, run synapse build --discover, and refresh the connected MCP tool registry.</pre>
+        </div>
+
+        <div class="table-section" style="margin-bottom:0;">
+          <div class="panel-header">
+            <span class="panel-title">Least-privilege endpoint curation policy</span>
+          </div>
+          <table class="clean-table">
+            <thead>
+              <tr><th>Service</th><th>Exposed to MCP</th><th>Withheld from MCP</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono" translate="no">flag-edge-gateway</td>
+                <td>4 diagnostic GET routes (+1 cohort exclusion POST via <code class="mono">--discover</code>)</td>
+                <td><code class="mono">POST /checkout</code> (buyer ingress), <code class="mono">POST /internal/reset</code></td>
+              </tr>
+              <tr>
+                <td class="mono" translate="no">payment-sla-ledger</td>
+                <td>4 read SLA &amp; hold inspection routes + 1 confirmation-gated Custom replay tool</td>
+                <td><code class="mono">POST /internal/authorize</code>, <code class="mono">capture-v1</code>, <code class="mono">capture-v2</code>, <code class="mono">reset</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ─── MULTI-STEP OPERATION CAROUSEL DIALOG ─── -->
+<div class="modal-layer" id="opCarousel" role="dialog" aria-modal="true" aria-labelledby="carouselTitle">
+  <div class="stepper-dialog">
+    <div class="stepper-head">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <svg class="spinner-svg" style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <path d="M12 2a10 10 0 0 1 10 10" />
+        </svg>
+        <div>
+          <div style="font-size:14px;font-weight:600;" id="carouselTitle">Working…</div>
+          <div style="font-size:12px;color:var(--ink-2);">Synchronizing microservices and Synapse MCP transports</div>
+        </div>
+      </div>
+      <span class="badge badge-neutral mono num" id="carouselTimer">0.0s</span>
+    </div>
+
+    <div class="stepper-progress" aria-hidden="true">
+      <div class="stepper-progress-bar" id="carouselProgressFill" style="width:25%;"></div>
+    </div>
+
+    <div class="stepper-cards" id="carouselSlides" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ─── POLITE TOAST REGION ─── -->
+<div class="toast-region" id="toastStack" aria-live="polite"></div>
+
+<script>
+const PRESETS = {
+  1: "Gateway error alerts are firing on both smart_retry_v1 and checkout_gateway_v2. Cross-reference both systems to tell me which flag cohort is actually stranding merchant money in uncaptured holds versus recovering on retry, how much money is stranded, and which Enterprise Tier-1 merchants are breaching or at risk of breaching SLA.",
+  2: "Before we reroute or retry failed checkouts for those impacted Enterprise Tier-1 merchants on checkout_gateway_v2, inspect their orders across both systems: which orders already have active customer bank authorization holds that would double-charge customers on a naive retry?",
+  3: "Exclude ONLY the impacted Enterprise Tier-1 merchants from checkout_gateway_v2 without turning off the flag globally, and preview a safe hold replay for them.",
+  4: "Now that flag-edge-gateway has been updated via synapse build --discover, exclude the impacted Enterprise Tier-1 merchants from checkout_gateway_v2 immediately, and run a dry-run preview (confirm=False) of replay_stranded_merchant_holds for them.",
+  5: "Confirm: execute replay_stranded_merchant_holds with confirm=True for those excluded Enterprise Tier-1 merchants and give me the SHA-256 recovery receipt."
+};
+
+let latestState = null;
+let edgeFilter = "ALL";
+let ledgerFilter = "ALL";
+let carouselLocalTimer = null;
+let carouselStartMs = 0;
+
+function esc(s) {
+  return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/* ─── Theme Persistence (Carbon / Paper) ─── */
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  document.getElementById("metaThemeColor").setAttribute("content", theme === "dark" ? "#0d0e10" : "#f7f8fa");
+  document.getElementById("themeLabel").textContent = theme === "dark" ? "Paper" : "Carbon";
+  try { localStorage.setItem("cb_theme", theme); } catch (_) {}
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute("data-theme") || "dark";
+  applyTheme(cur === "dark" ? "light" : "dark");
+}
+
+(function initThemeAndTab() {
+  try {
+    const saved = localStorage.getItem("cb_theme");
+    if (saved === "light" || saved === "dark") applyTheme(saved);
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("tab");
+    if (t && ["command", "gateway", "ledger", "discover"].includes(t)) {
+      setTimeout(() => switchTab(t, false), 0);
+    }
+  } catch (_) {}
+})();
+
+function toast(htmlMsg, isError = false) {
+  const stack = document.getElementById("toastStack");
+  const el = document.createElement("div");
+  el.className = "toast-card" + (isError ? " error" : "");
+  el.innerHTML = htmlMsg;
+  stack.appendChild(el);
+  setTimeout(() => { el.remove(); }, 4500);
+}
+
+function switchTab(tabId, updateUrl = true) {
+  document.querySelectorAll(".tab-item").forEach(btn => {
+    const active = btn.dataset.tab === tabId;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  document.querySelectorAll(".pane-view").forEach(p => {
+    p.classList.toggle("active", p.id === `tab-${tabId}`);
+  });
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tabId);
+    window.history.replaceState({}, "", url);
+  }
+  if (tabId === "discover") {
+    loadDiscoverSource();
+  }
+}
+
+function setEdgeFilter(f) {
+  edgeFilter = f;
+  document.querySelectorAll("#edgeFilterPills .seg-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.filter === f);
+  });
+  if (latestState) renderState(latestState);
+}
+
+function setLedgerFilter(f) {
+  ledgerFilter = f;
+  document.querySelectorAll("#ledgerFilterPills .seg-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.filter === f);
+  });
+  if (latestState) renderState(latestState);
+}
+
+/* ─── Multi-Step Operation Carousel ─── */
+function showCarousel(title, fallbackSteps) {
+  const el = document.getElementById("opCarousel");
+  document.getElementById("carouselTitle").textContent = title;
+  carouselStartMs = performance.now();
+  renderCarouselSteps(fallbackSteps, 0);
+  el.classList.add("open");
+
+  clearInterval(carouselLocalTimer);
+  carouselLocalTimer = setInterval(async () => {
+    const elapsed = ((performance.now() - carouselStartMs) / 1000).toFixed(1);
+    document.getElementById("carouselTimer").textContent = `${elapsed}s`;
+    try {
+      const r = await fetch("/api/ops/status");
+      const st = await r.json();
+      if (st.active && Array.isArray(st.steps) && st.steps.length) {
+        document.getElementById("carouselTitle").textContent = st.title || title;
+        renderCarouselSteps(st.steps, st.step_index || 0);
+      }
+    } catch (_) {}
+  }, 220);
+}
+
+function renderCarouselSteps(steps, idx) {
+  const pct = Math.min(100, Math.round(((idx + 0.65) / Math.max(1, steps.length)) * 100));
+  document.getElementById("carouselProgressFill").style.width = `${pct}%`;
+  document.getElementById("carouselSlides").innerHTML = steps.map((s, i) => {
+    const state = s.state || (i < idx ? "done" : (i === idx ? "active" : "pending"));
+    let marker = `<span class="mono" style="color:var(--ink-3);">${i + 1}.</span>`;
+    if (state === "done") {
+      marker = `<svg class="icon" style="color:var(--ok);" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-6.5"/></svg>`;
+    } else if (state === "active") {
+      marker = `<svg class="spinner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 2a10 10 0 0 1 10 10"/></svg>`;
+    }
+    return `<div class="step-tile ${state}">
+      <div class="step-tile-title">${marker}<span>${esc(s.label)}</span></div>
+      <div class="step-tile-desc">${esc(s.detail)}</div>
+    </div>`;
+  }).join("");
+}
+
+function hideCarousel() {
+  clearInterval(carouselLocalTimer);
+  document.getElementById("carouselProgressFill").style.width = "100%";
+  setTimeout(() => {
+    document.getElementById("opCarousel").classList.remove("open");
+  }, 200);
+}
+
+/* ─── Markdown Formatter ─── */
+function inlineFmt(s) {
+  return esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+}
+
+function renderMd(md) {
+  const lines = String(md || "").split("\n");
+  let out = [], inUl = false, tableRows = [];
+
+  const flushList = () => { if (inUl) { out.push("</ul>"); inUl = false; } };
+  const flushTable = () => {
+    if (!tableRows.length) return;
+    const filtered = tableRows.filter(r => !/^\s*\|?[\s:-]+\|[\s|:-]*$/.test(r));
+    if (filtered.length) {
+      out.push('<table class="md-table">');
+      filtered.forEach((row, idx) => {
+        const cells = row.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+        const tag = idx === 0 ? "th" : "td";
+        out.push("<tr>" + cells.map(c => `<${tag}>${inlineFmt(c)}</${tag}>`).join("") + "</tr>");
+      });
+      out.push("</table>");
+    }
+    tableRows = [];
+  };
+
+  for (const ln of lines) {
+    if (ln.trim().startsWith("|") && ln.trim().endsWith("|")) {
+      flushList();
+      tableRows.push(ln);
+      continue;
+    } else {
+      flushTable();
+    }
+    const h = ln.match(/^#{1,4}\s+(.*)$/);
+    if (h) {
+      flushList();
+      out.push(`<h4>${inlineFmt(h[1])}</h4>`);
+      continue;
+    }
+    const li = ln.match(/^\s*(?:[-*]|\d+\.)\s+(.*)$/);
+    if (li) {
+      if (!inUl) { out.push("<ul>"); inUl = true; }
+      out.push(`<li>${inlineFmt(li[1])}</li>`);
+    } else {
+      flushList();
+      if (ln.trim()) out.push(`<p style="margin-bottom:6px;">${inlineFmt(ln)}</p>`);
+    }
+  }
+  flushList();
+  flushTable();
+  return out.join("");
+}
+
+/* ─── Live Telemetry Polling ─── */
+async function pollState() {
+  try {
+    const res = await fetch("/api/live-state");
+    if (!res.ok) return;
+    const data = await res.json();
+    latestState = data;
+    renderState(data);
+  } catch (_) {}
+}
+
+async function loadDiscoverSource() {
+  try {
+    const r = await fetch("/api/discover/source");
+    const d = await r.json();
+    document.getElementById("discoverGoSource").textContent = d.source_code || "";
+    const badge = document.getElementById("discoverSourceBadge");
+    badge.textContent = d.enabled ? "5-tool surface active" : "4-tool read-only baseline";
+    badge.className = "badge " + (d.enabled ? "badge-ok" : "badge-neutral");
+  } catch (_) {}
+}
+
+function renderState(data) {
+  const rep = data.replayer || {};
+  const sum = data.ledger?.summary || {};
+  const mcp = data.mcp_registry || {};
+  const servers = mcp.servers || [];
+  const flags = data.gateway?.flags || [];
+  const cohorts = data.gateway?.cohorts || [];
+  const slas = data.ledger?.merchant_slas || [];
+  const audits = data.ledger?.audit_receipts || [];
+
+  const capturedCnt = sum.captured_count || 0;
+  const strandedCnt = sum.stranded_hold_count || 0;
+  const replayedCnt = sum.replayed_safe_count || 0;
+  const totalIntents = Math.max(1, sum.total_intents || (capturedCnt + strandedCnt + replayedCnt));
+  const retryCohort = cohorts.find(c => c.flag_key === "smart_retry_v1");
+  const retriedOkCnt = retryCohort ? (retryCohort.retry_recovered_count || 0) : 0;
+  const directCapturedCnt = Math.max(0, capturedCnt - retriedOkCnt);
+
+  const goSrv = servers.find(s => s.server_key === "flag_edge_gateway");
+  const goTools = goSrv ? goSrv.tool_count : 4;
+
+  // Header status indicator
+  const incBadge = document.getElementById("incidentBadge");
+  const incText = document.getElementById("incidentText");
+  if (strandedCnt > 0) {
+    incBadge.className = "status-indicator incident";
+    incText.textContent = `Degraded: ${strandedCnt} stranded holds (${sum.stranded_amount_formatted})`;
+  } else if (replayedCnt > 0) {
+    incBadge.className = "status-indicator";
+    incText.textContent = `Resolved: ${replayedCnt} holds settled ($0.00 stranded)`;
+  } else {
+    incBadge.className = "status-indicator";
+    incText.textContent = "All cohorts healthy";
+  }
+
+  // Stream toggle button
+  const btnStream = document.getElementById("btnStream");
+  if (rep.running) {
+    btnStream.className = "btn btn-active-stream";
+    btnStream.innerHTML = `<svg class="icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="4" y="3.2" width="2.8" height="9.6" rx="0.6"/><rect x="9.2" y="3.2" width="2.8" height="9.6" rx="0.6"/></svg><span>Pause stream (${rep.rps || 5}/s)</span>`;
+  } else {
+    btnStream.className = "btn";
+    btnStream.innerHTML = `<svg class="icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 3.2l8 4.8-8 4.8V3.2z"/></svg><span>Stream traffic (5/s)</span>`;
+  }
+
+  // Metric strip
+  document.getElementById("ribDispatched").textContent = (rep.total_dispatched || 0).toLocaleString();
+  document.getElementById("ribStreamState").textContent = rep.running
+    ? `Streaming live · cursor #${(rep.cursor_seq_id || 0).toLocaleString()}`
+    : `Paused · cursor #${(rep.cursor_seq_id || 0).toLocaleString()}`;
+  document.getElementById("ribCaptured").textContent = sum.captured_amount_formatted || "$0.00";
+  document.getElementById("ribCapturedSub").textContent = `${capturedCnt.toLocaleString()} settled checkouts`;
+  document.getElementById("ribStranded").textContent = sum.stranded_amount_formatted || "$0.00";
+  document.getElementById("ribStrandedSub").textContent = `${strandedCnt.toLocaleString()} active authorization locks`;
+  document.getElementById("ribStrandedCard").className = strandedCnt > 0 ? "metric-cell alert-cell" : "metric-cell";
+  document.getElementById("ribReplayed").textContent = sum.replayed_amount_formatted || "$0.00";
+  document.getElementById("ribReplayedSub").textContent = `${replayedCnt.toLocaleString()} rescued, 0 duplicate charges`;
+  document.getElementById("ribMcpTools").textContent = `${mcp.total_tools || 9} tools`;
+  document.getElementById("ribMcpSub").textContent = goTools >= 5 ? "Live discovery active (5+4+1)" : "Baseline surface (4+4+1)";
+
+  // Proportion bar
+  const pCap = ((directCapturedCnt / totalIntents) * 100).toFixed(1);
+  const pRet = ((retriedOkCnt / totalIntents) * 100).toFixed(1);
+  const pRep = ((replayedCnt / totalIntents) * 100).toFixed(1);
+  const pStr = ((strandedCnt / totalIntents) * 100).toFixed(1);
+  document.getElementById("segCaptured").style.width = `${pCap}%`;
+  document.getElementById("segRetried").style.width = `${pRet}%`;
+  document.getElementById("segReplayed").style.width = `${pRep}%`;
+  document.getElementById("segStranded").style.width = `${pStr}%`;
+  document.getElementById("legCaptured").textContent = `Settled ${Math.round(((capturedCnt) / totalIntents) * 100)}%`;
+  document.getElementById("legRetried").textContent = `503 retried ${retriedOkCnt}`;
+  document.getElementById("legReplayed").textContent = `Rescued ${Math.round((replayedCnt / totalIntents) * 100)}%`;
+  document.getElementById("legStranded").textContent = `Stranded ${Math.round((strandedCnt / totalIntents) * 100)}%`;
+
+  // Tab counters
+  const bLedger = document.getElementById("badgeLedger");
+  bLedger.textContent = `${strandedCnt} stranded`;
+  bLedger.className = "count-chip " + (strandedCnt > 0 ? "danger" : "ok");
+
+  const bDisc = document.getElementById("badgeDiscover");
+  bDisc.textContent = `${goTools} Go tools`;
+  bDisc.className = "count-chip " + (goTools >= 5 ? "ok" : "");
+
+  document.getElementById("stepCard4").classList.toggle("completed", goTools >= 5);
+  document.getElementById("stepCard6").classList.toggle("completed", replayedCnt > 0 && strandedCnt === 0);
+
+  // Connected MCP nodes in nav bar
+  document.getElementById("headerServerPills").innerHTML = servers.map(s => {
+    const evolved = s.server_key === "flag_edge_gateway" && s.tool_count >= 5;
+    return `<span class="mcp-node ${evolved ? "evolved" : ""}" title="${esc((s.tools || []).join(", "))}">
+      <span translate="no">${esc(s.server_label)}</span>
+      <strong class="num">${s.tool_count}</strong>
+    </span>`;
+  }).join("");
+
+  // Sidebar cross-silo summary
+  const gwCanary = cohorts.find(c => c.flag_key === "checkout_gateway_v2");
+  const breaching = slas.filter(m => m.stranded_holds > 0 && m.sla_tier === "ENTERPRISE_TIER_1");
+  document.getElementById("miniCrossSummary").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:var(--ink-2);">smart_retry_v1 (503 retried)</span>
+      <span class="mono num">${retryCohort ? `${retryCohort.initial_503_count} → ${retryCohort.retry_recovered_count} OK` : "0"}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:var(--ink-2);">checkout_gateway_v2 (504s)</span>
+      <span class="badge ${gwCanary && gwCanary.timeout_504_count > 0 ? "badge-danger" : "badge-ok"} mono">${gwCanary ? gwCanary.timeout_504_count : 0} timeouts</span>
+    </div>
+    <div style="height:1px;background:var(--line);"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:var(--ink-2);">Tier-1 merchants impacted</span>
+      <strong class="num">${breaching.length}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:var(--ink-2);">Signed SHA-256 receipts</span>
+      <strong class="num">${audits.length}</strong>
+    </div>
+  `;
+
+  // Tab 2: Flag Gateway
+  document.getElementById("fullFlagsGrid").innerHTML = flags.map(f => {
+    const ex = f.excluded_merchants || [];
+    return `<div class="flag-cell">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <strong class="mono" style="font-size:13px;" translate="no">${esc(f.flag_key)}</strong>
+        <span class="badge badge-neutral mono">${f.rollout_pct}% → ${esc(f.active_variant)}</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--ink-2);">${esc(f.description)}</div>
+      <div class="meter-track"><div class="meter-fill" style="width:${f.rollout_pct}%;"></div></div>
+      <div style="font-size:11.5px;color:var(--ink-3);" class="mono">Fallback: ${esc(f.fallback_variant)}</div>
+      ${ex.length ? `<div class="quarantine-note mono">Excluded (${ex.length} → ${esc(f.fallback_variant)}): ${ex.map(x => x.slice(0, 10) + "…").join(", ")}</div>` : ""}
+    </div>`;
+  }).join("");
+
+  document.getElementById("fullCohortTable").innerHTML = cohorts.length ? cohorts.map(c => `
+    <tr>
+      <td class="mono"><strong translate="no">${esc(c.flag_key)}</strong></td>
+      <td class="mono">${esc(c.variant)}</td>
+      <td class="num">${c.total_requests}</td>
+      <td><span class="badge badge-ok">${c.ok_200_count}</span></td>
+      <td>${c.initial_503_count > 0 ? `<span class="badge badge-warn">${c.initial_503_count} → ${c.retry_recovered_count} OK</span>` : '<span style="color:var(--ink-3);">0</span>'}</td>
+      <td>${c.timeout_504_count > 0 ? `<span class="badge badge-danger">${c.timeout_504_count} timeouts</span>` : '<span class="badge badge-ok">0</span>'}</td>
+      <td class="mono">${c.p95_latency_ms}&nbsp;ms</td>
+      <td class="num">${c.impacted_merchant_count}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="8" style="color:var(--ink-3);">No checkout traffic recorded yet. Select “Replay 60 orders” to stream transactions.</td></tr>`;
+
+  let edgeRows = data.gateway?.recent_telemetry || [];
+  if (edgeFilter === "504") edgeRows = edgeRows.filter(r => r.final_status === 504);
+  if (edgeFilter === "RETRY") edgeRows = edgeRows.filter(r => r.initial_status === 503);
+  document.getElementById("fullEdgeStreamTable").innerHTML = edgeRows.slice(0, 25).map(r => {
+    const cls = r.final_status === 200 ? (r.initial_status === 503 ? "badge-warn" : "badge-ok") : "badge-danger";
+    return `<tr>
+      <td class="mono">${esc(r.order_id.slice(0, 12))}…</td>
+      <td class="mono">${esc(r.merchant_id.slice(0, 12))}…</td>
+      <td class="mono" translate="no">${esc(r.flag_key)}</td>
+      <td class="mono">${esc(r.variant)}</td>
+      <td><span class="badge ${cls} mono">${r.initial_status} → ${r.final_status}</span></td>
+      <td class="num">${r.retry_attempts}</td>
+      <td class="mono">${r.latency_ms}&nbsp;ms</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="7" style="color:var(--ink-3);">No matching routing records for this filter.</td></tr>`;
+
+  // Tab 3: Settlement Ledger
+  document.getElementById("fullSlaTable").innerHTML = slas.length ? slas.map(m => {
+    const cls = m.sla_status === "HEALTHY" ? "badge-ok" : (m.sla_status.includes("BREACH") ? "badge-danger" : "badge-warn");
+    const capRate = m.capture_success_pct ?? (m.total_orders ? ((m.settled_orders / m.total_orders) * 100).toFixed(1) : "100.0");
+    const targetRate = m.sla_target_pct ?? (100 - (m.max_allowed_stranded_pct || 5)).toFixed(1);
+    return `<tr>
+      <td><strong>${esc(m.display_name)}</strong></td>
+      <td class="mono">${esc(m.merchant_id.slice(0, 12))}…</td>
+      <td class="mono" style="font-size:11.5px;">${esc(m.sla_tier)}</td>
+      <td class="num">${m.total_orders}</td>
+      <td><strong>${capRate}%</strong> <span style="color:var(--ink-3);">(target ≥${targetRate}%)</span></td>
+      <td>${m.stranded_holds > 0 ? `<span class="badge badge-danger">${m.stranded_holds} (${m.stranded_amount_formatted})</span>` : '<span class="badge badge-ok">0 ($0.00)</span>'}</td>
+      <td><span class="badge ${cls}">${esc(m.sla_status)} (${m.minutes_to_sla_breach}m)</span></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="7" style="color:var(--ink-3);">No merchant SLA activity recorded yet.</td></tr>`;
+
+  let intents = data.ledger?.recent_intents || [];
+  if (ledgerFilter !== "ALL") intents = intents.filter(i => i.status === ledgerFilter);
+  document.getElementById("fullLedgerIntentsTable").innerHTML = intents.slice(0, 25).map(i => {
+    const cls = i.status === "CAPTURED" ? "badge-ok" : (i.status === "HOLD_STRANDED" ? "badge-danger" : "badge-info");
+    return `<tr>
+      <td class="mono">${esc(i.order_id.slice(0, 12))}…</td>
+      <td>${esc((i.merchant_name || i.merchant_id).slice(0, 26))}</td>
+      <td class="mono" style="font-size:11px;">${esc(i.sla_tier)}</td>
+      <td class="mono">${esc(i.payment_method)}</td>
+      <td class="mono">${i.installments}×</td>
+      <td class="mono">$${(i.amount_cents / 100).toFixed(2)}</td>
+      <td>${i.bank_hold_active ? '<span class="badge badge-warn mono">Active lock</span>' : '<span style="color:var(--ink-3);">Released</span>'}</td>
+      <td><span class="badge ${cls} mono">${esc(i.status)}</span></td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="8" style="color:var(--ink-3);">No payment intents match the selected filter.</td></tr>`;
+
+  document.getElementById("auditReceiptsTable").innerHTML = audits.length ? audits.map(a => `
+    <tr>
+      <td class="mono"><strong>${esc(a.receipt_id)}</strong></td>
+      <td class="mono">${esc(a.merchant_ids_csv.slice(0, 34))}${a.merchant_ids_csv.length > 34 ? "…" : ""}</td>
+      <td><span class="badge badge-ok">${a.replayed_count} settled</span></td>
+      <td class="mono"><strong>$${(a.replayed_amount_cents / 100).toFixed(2)}</strong></td>
+      <td class="mono" style="color:var(--ink-2);">${esc(a.sha256_signature.slice(0, 24))}…</td>
+      <td class="mono" style="color:var(--ink-2);">${esc(a.created_at)}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="6" style="color:var(--ink-3);">No replay receipts recorded yet. Complete Runbook Step 6 to settle stranded holds and issue a SHA-256 receipt.</td></tr>`;
+
+  // Tab 4: Live Discovery Registry
+  document.getElementById("discoverRegistryCards").innerHTML = servers.map(s => `
+    <div style="padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:var(--surface-subtle);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <strong translate="no">${esc(s.server_label)}</strong>
+        <span class="badge badge-neutral">${esc(s.badge)} · ${s.tool_count} tool${s.tool_count === 1 ? "" : "s"}</span>
+      </div>
+      <div class="mono" style="font-size:11px;color:var(--ink-3);margin-bottom:8px;" translate="no">${esc(s.server_id || "")}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        ${(s.tools || []).map(t => `<span class="badge ${t.includes("exclude") ? "badge-ok" : "badge-neutral"} mono" translate="no">${esc(t)}</span>`).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ─── Controls & Carousel Actions ─── */
+async function toggleStream() {
+  const running = latestState?.replayer?.running;
+  const action = running ? "pause" : "start";
+  await fetch("/api/replayer/control", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(action === "start" ? {action: "start", rps: 5} : {action: "pause"})
+  });
+  await pollState();
+  toast(action === "start" ? "Live Olist stream started at 5 orders/s." : "Live Olist stream paused.");
+}
+
+async function stepRealOrders(count) {
+  const btn = document.getElementById("btnStep60");
+  const prev = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<svg class="spinner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 2a10 10 0 0 1 10 10"/></svg><span>Replaying ${count}…</span>`;
+  try {
+    const res = await fetch("/api/replayer/control", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action: "step", count})
+    });
+    const d = await res.json();
+    await pollState();
+    toast(`<strong>Replayed ${d.stepped} real Olist orders</strong><br/>${d.ok_2xx_in_batch} settled (${d.settled_amount_formatted || ""}) · ${d.err_5xx_in_batch} timed out in v2 (${d.stranded_amount_formatted || ""})`);
+  } catch (e) {
+    toast(`Replay failed: ${esc(e)}`, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = prev;
+  }
+}
+
+async function refreshMcpWithCarousel() {
+  const btn = document.getElementById("btnRefreshMcp");
+  btn.disabled = true;
+  showCarousel("Refreshing Synapse MCP connections", [
+    {label: "Closing stale pipes", detail: "Releasing existing stdio sessions cleanly", state: "active"},
+    {label: "Syncing Hosted schemas", detail: "Fetching Go & Python tool manifests", state: "pending"},
+    {label: "Verifying Custom server", detail: "Checking guarded hold-replay tool", state: "pending"}
+  ]);
+  try {
+    const res = await fetch("/api/mcp/reload", {method: "POST"});
+    const d = await res.json();
+    await pollState();
+    toast(`<strong>MCP connections refreshed</strong> · ${d.mcp_registry?.total_tools || 9} active tools`);
+  } catch (e) {
+    toast(`Refresh failed: ${esc(e)}`, true);
+  } finally {
+    hideCarousel();
+    btn.disabled = false;
+  }
+}
+
+async function resetDemoWithCarousel() {
+  const btn = document.getElementById("btnResetDemo");
+  btn.disabled = true;
+  showCarousel("Resetting environment to baseline", [
+    {label: "Pausing stream", detail: "Resetting Olist cursor to sequence #35,856", state: "active"},
+    {label: "Restoring 4-tool Go surface", detail: "Syncing Hosted Server e2d50a55 via discover", state: "pending"},
+    {label: "Clearing SQLite WAL stores", detail: "Resetting edge_flags.db & payment_ledger.db", state: "pending"},
+    {label: "Seeding 120 real orders", detail: "Replaying baseline Black Friday traffic", state: "pending"}
+  ]);
+  try {
+    const res = await fetch("/api/demo/reset-all", {method: "POST"});
+    const d = await res.json();
+    document.querySelectorAll(".runbook-step").forEach(c => c.classList.remove("completed"));
+    document.getElementById("chatLog").innerHTML = `
+      <div class="turn">
+        <div class="turn-role">CanaryBrake Copilot</div>
+        <div class="turn-body">Environment reset complete. Restored the 4-tool Go baseline (<strong class="num">9</strong> total MCP tools) and replayed <strong class="num">120</strong> real Olist orders. Ready for Step 1.</div>
+      </div>`;
+    await pollState();
+    await loadDiscoverSource();
+    toast(`<strong>Environment reset complete</strong> · ${d.mcp_registry?.total_tools || 9} tools · 120 real orders replayed`);
+  } catch (e) {
+    toast(`Reset failed: ${esc(e)}`, true);
+  } finally {
+    hideCarousel();
+    btn.disabled = false;
+  }
+}
+
+async function executeLiveDiscover(mode) {
+  const b1 = document.getElementById("btnRunEnableDiscover");
+  const b2 = document.getElementById("btnRunDisableDiscover");
+  b1.disabled = true; b2.disabled = true;
+  const label = mode === "enable" ? "Exposing 5th route via synapse build --discover" : "Restoring 4-tool baseline";
+  showCarousel(label, [
+    {label: "Updating Go route file", detail: "Writing services/flag-edge-gateway/discover_routes.go", state: "active"},
+    {label: "Building Go & rescanning", detail: "Running incremental tree-sitter scan + discover", state: "pending"},
+    {label: "Restarting & reloading MCP", detail: "Verifying :8081/health and refreshing tool list", state: "pending"}
+  ]);
+  try {
+    const res = await fetch("/api/demo/live-discover", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({mode})
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.detail || "discover failed");
+    document.getElementById("discoverCliOutput").textContent = d.cli_output || "";
+    await loadDiscoverSource();
+    await pollState();
+    toast(mode === "enable"
+      ? `<strong>synapse build --discover complete</strong><br/>Server ID preserved · Go surface updated from 4 to 5 tools`
+      : `<strong>Restored 4-tool baseline</strong> on Hosted Server e2d50a55`);
+  } catch (e) {
+    toast(`Live discover failed: ${esc(e)}`, true);
+  } finally {
+    hideCarousel();
+    b1.disabled = false; b2.disabled = false;
+  }
+}
+
+/* ─── Investigation Thread ─── */
+async function clearChat() {
+  await fetch("/api/chat/clear", {method: "POST"});
+  document.getElementById("chatLog").innerHTML = `
+    <div class="turn">
+      <div class="turn-role">CanaryBrake Copilot</div>
+      <div class="turn-body">Thread cleared.</div>
+    </div>`;
+}
+
+function runPlaybookStep(presetNum) {
+  switchTab("command");
+  const cardMap = {1: "stepCard1", 2: "stepCard2", 3: "stepCard3", 4: "stepCard5", 5: "stepCard6"};
+  document.getElementById("chatInput").value = PRESETS[presetNum];
+  submitChat(new Event("submit"), cardMap[presetNum]);
+}
+
+async function submitChat(e, stepCardId = null) {
+  e.preventDefault();
+  const input = document.getElementById("chatInput");
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+
+  const log = document.getElementById("chatLog");
+  log.innerHTML += `
+    <div class="turn user-turn">
+      <div class="turn-role">Operator</div>
+      <div class="turn-body">${esc(text)}</div>
+    </div>`;
+
+  const pendingId = "pending_" + Date.now();
+  log.innerHTML += `
+    <div class="turn" id="${pendingId}">
+      <div class="turn-role">CanaryBrake Copilot</div>
+      <div class="turn-body" style="display:flex;align-items:center;gap:8px;color:var(--ink-2);">
+        <svg class="spinner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+        <span>Querying connected Synapse MCP servers…</span>
+      </div>
+    </div>`;
+  log.scrollTop = log.scrollHeight;
+
+  const btn = document.getElementById("sendBtn");
+  btn.disabled = true;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: text})
+    });
+    const data = await res.json();
+    const tracesHtml = (data.tool_traces || []).map(t => `
+      <details class="trace-row">
+        <summary>
+          <span style="display:inline-flex;align-items:center;gap:8px;">
+            <span class="source-tag" translate="no">${esc(t.server_label)}</span>
+            <span class="mono" translate="no">${esc(t.tool_name)}</span>
+          </span>
+          <span class="mono" style="color:var(--ink-3);">${t.latency_ms}&nbsp;ms</span>
+        </summary>
+        <pre>Arguments: ${esc(JSON.stringify(t.arguments))}\n\nResponse:\n${esc(JSON.stringify(t.output, null, 2).slice(0, 1800))}</pre>
+      </details>
+    `).join("");
+
+    document.getElementById(pendingId).innerHTML = `
+      <div class="turn-role">CanaryBrake Copilot</div>
+      <div class="turn-body">
+        ${tracesHtml ? `<div class="trace-list">${tracesHtml}</div>` : ""}
+        ${renderMd(data.answer || "")}
+      </div>`;
+    if (stepCardId) {
+      document.getElementById(stepCardId)?.classList.add("completed");
+    }
+    await pollState();
+  } catch (err) {
+    document.getElementById(pendingId).innerHTML = `
+      <div class="turn-role">CanaryBrake Copilot</div>
+      <div class="turn-body" style="color:var(--danger);">Request failed: ${esc(err)}</div>`;
+  } finally {
+    btn.disabled = false;
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+setInterval(pollState, 1300);
+pollState();
+loadDiscoverSource();
+</script>
+</body>
+</html>

@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CanaryBrake · Cross-System Checkout Incident & Revenue-Rescue Platform</title>
+<style>
+  :root {
+    --bg: #070b14;
+    --bg-elev: #0c1220;
+    --panel: #101829;
+    --panel-2: #152036;
+    --panel-hover: #1a2844;
+    --border: #1f2e4d;
+    --border-bright: #2e4470;
+    --text: #eef2ff;
+    --text-soft: #cbd5e1;
+    --muted: #8496b8;
+    --cyan: #38bdf8;
+    --blue: #3b82f6;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --violet: #a855f7;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: radial-gradient(circle at 15% 0%, #0f1b33 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: var(--sans);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── Top Command Header ─── */
+  .topbar {
+    background: rgba(11, 17, 30, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    z-index: 20;
+  }
+
+  .brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 15px;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+  }
+
+  .brand-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-title h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .incident-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.12);
+    color: #6ee7b7;
+  }
+
+  .incident-pill.active {
+    border-color: rgba(244, 63, 94, 0.55);
+    background: rgba(244, 63, 94, 0.15);
+    color: #fda4af;
+  }
+
+  .pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+    animation: pulseGlow 1.8s infinite ease-in-out;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.85); }
+  }
+
+  .brand-sub {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    font-family: var(--sans);
+  }
+
+  .btn:hover:not(:disabled) {
+    background: var(--panel-hover);
+    border-color: var(--border-bright);
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn.primary {
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    border-color: #38bdf8;
+    color: #fff;
+  }
+
+  .btn.stream-on {
+    background: rgba(16, 185, 129, 0.16);
+    border-color: var(--emerald);
+    color: #6ee7b7;
+  }
+
+  .btn.discover-btn {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(59, 130, 246, 0.22));
+    border-color: var(--violet);
+    color: #f3e8ff;
+  }
+
+  .btn.danger-soft {
+    border-color: rgba(244, 63, 94, 0.45);
+    color: #fecdd3;
+  }
+
+  .mini-spin {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255,255,255,0.28);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── Persistent KPI Ribbon ─── */
+  .kpi-ribbon {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    padding: 10px 20px;
+    background: #090e1a;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ribbon-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 9px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .ribbon-card.alert {
+    border-color: rgba(244, 63, 94, 0.65);
+    background: linear-gradient(90deg, rgba(244, 63, 94, 0.12), rgba(16, 24, 41, 0.95));
+  }
+
+  .ribbon-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  .ribbon-val {
+    font-family: var(--mono);
+    font-size: 17px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .ribbon-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* ─── Tab Navigation Bar ─── */
+  .tabs-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .tabs-list {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2.5px solid transparent;
+    color: var(--muted);
+    padding: 11px 15px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.16s ease;
+    white-space: nowrap;
+    font-family: var(--sans);
+  }
+
+  .tab-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .tab-btn.active {
+    color: #fff;
+    border-bottom-color: var(--cyan);
+    background: rgba(56, 189, 248, 0.06);
+  }
+
+  .tab-badge {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+  }
+
+  .tab-badge.bad {
+    background: rgba(244, 63, 94, 0.2);
+    border-color: rgba(244, 63, 94, 0.5);
+    color: #fda4af;
+  }
+
+  .tab-badge.good {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.45);
+    color: #6ee7b7;
+  }
+
+  .tab-badge.purple {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.5);
+    color: #e9d5ff;
+  }
+
+  .mcp-server-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 6px 0;
+  }
+
+  .srv-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #111b2e;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+  }
+
+  .srv-pill.upgraded {
+    border-color: var(--emerald);
+    background: rgba(16, 185, 129, 0.14);
+    color: #a7f3d0;
+  }
+
+  /* ─── Tab Panels Container ─── */
+  .workspace {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tab-panel {
+    display: none;
+    height: 100%;
+    padding: 16px 20px;
+    overflow-y: auto;
+  }
+
+  .tab-panel.active {
+    display: block;
+    animation: fadeSlide 0.18s ease-out;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Tab 1 Layout: Incident Command & Copilot ─── */
+  .command-grid {
+    display: grid;
+    grid-template-columns: 410px 1fr;
+    gap: 16px;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .left-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .surface-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-soft);
+  }
+
+  .link-btn {
+    background: none;
+    border: none;
+    color: var(--cyan);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .link-btn:hover { text-decoration: underline; }
+
+  /* Playbook Stepper */
+  .playbook-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .step-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+    width: 100%;
+  }
+
+  .step-card:hover {
+    border-color: var(--cyan);
+    background: var(--panel-hover);
+  }
+
+  .step-card.done {
+    border-color: rgba(16, 185, 129, 0.45);
+    background: rgba(16, 185, 129, 0.07);
+  }
+
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #1e2d4a;
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-card.done .step-num {
+    background: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+  }
+
+  .step-body h4 {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .step-body p {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  /* Copilot Studio Panel */
+  .copilot-studio {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .studio-header {
+    padding: 12px 16px;
+    background: #0c1424;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .chat-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .msg-bubble {
+    padding: 13px 16px;
+    border-radius: 11px;
+    font-size: 13.5px;
+    line-height: 1.58;
+  }
+
+  .msg-bubble.user {
+    background: linear-gradient(135deg, #172b4d 0%, #1e3a6d 100%);
+    border: 1px solid #2d5296;
+    align-self: flex-end;
+    max-width: 82%;
+    color: #f8fafc;
+  }
+
+  .msg-bubble.bot {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    width: 100%;
+  }
+
+  .msg-bubble.bot h3, .msg-bubble.bot h4 {
+    margin: 8px 0 5px;
+    font-size: 14px;
+    color: #f8fafc;
+  }
+
+  .msg-bubble.bot ul, .msg-bubble.bot ol {
+    margin: 6px 0 8px 20px;
+  }
+
+  .msg-bubble.bot li { margin-bottom: 5px; }
+
+  .msg-bubble.bot code {
+    font-family: var(--mono);
+    background: #080d18;
+    border: 1px solid #1e2d4a;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #7dd3fc;
+  }
+
+  .md-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 12px;
+    background: #0b111f;
+    border-radius: 7px;
+    overflow: hidden;
+  }
+
+  .md-table th, .md-table td {
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .md-table th { background: #111b30; color: var(--text-soft); }
+
+  /* Provenance Trace Cards */
+  .trace-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  details.trace-item {
+    background: #090f1d;
+    border: 1px solid #1e2f4f;
+    border-radius: 8px;
+    padding: 7px 11px;
+    font-size: 11.5px;
+  }
+
+  details.trace-item summary {
+    cursor: pointer;
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    list-style: none;
+  }
+
+  details.trace-item pre {
+    margin-top: 8px;
+    padding: 9px;
+    background: #050912;
+    border: 1px solid #17243d;
+    border-radius: 6px;
+    overflow-x: auto;
+    max-height: 210px;
+    color: #94a3b8;
+    font-size: 11px;
+  }
+
+  .srv-tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+  }
+
+  .srv-tag.go { background: rgba(56,189,248,0.16); color: #38bdf8; border: 1px solid rgba(56,189,248,0.35); }
+  .srv-tag.py { background: rgba(16,185,129,0.16); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.35); }
+  .srv-tag.custom { background: rgba(168,85,247,0.18); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.4); }
+
+  .chat-composer {
+    padding: 12px 16px;
+    background: #0c1424;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+  }
+
+  .chat-composer input {
+    flex: 1;
+    background: #121d33;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 13px;
+    color: var(--text);
+    font-size: 13.5px;
+    outline: none;
+  }
+
+  .chat-composer input:focus { border-color: var(--cyan); }
+
+  /* ─── Shared Silo Tabs (Tabs 2, 3, 4) ─── */
+  .silo-banner {
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.1), rgba(16, 24, 41, 0.9));
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 10px;
+    padding: 11px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12.5px;
+  }
+
+  .silo-banner.py {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), rgba(16, 24, 41, 0.9));
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  .silo-banner.purple {
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.13), rgba(16, 24, 41, 0.9));
+    border-color: rgba(168, 85, 247, 0.4);
+  }
+
+  .flags-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .flag-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rollout-bar {
+    height: 7px;
+    background: #1a2640;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .rollout-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0ea5e9, #6366f1);
+    border-radius: 999px;
+  }
+
+  .quarantine-banner {
+    padding: 7px 10px;
+    border-radius: 7px;
+    background: rgba(16, 185, 129, 0.13);
+    border: 1px solid rgba(16, 185, 129, 0.42);
+    color: #a7f3d0;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .data-table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  table.data-table th {
+    text-align: left;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table.data-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(31, 46, 77, 0.55);
+    font-family: var(--mono);
+    font-size: 11.5px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    font-family: var(--mono);
+  }
+  .pill.ok { background: rgba(16, 185, 129, 0.16); color: #6ee7b7; }
+  .pill.warn { background: rgba(245, 158, 11, 0.18); color: #fcd34d; }
+  .pill.bad { background: rgba(244, 63, 94, 0.2); color: #fda4af; }
+  .pill.rep { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; }
+
+  .filter-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .filter-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .filter-pill.active {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: var(--cyan);
+    color: #fff;
+  }
+
+  /* ─── Tab 4: Live Discover Showcase ─── */
+  .discover-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 16px;
+  }
+
+  .code-box, .cli-box {
+    background: #060a13;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: #cbd5e1;
+    overflow-x: auto;
+    white-space: pre-wrap;
+  }
+
+  .cli-box {
+    min-height: 250px;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  /* ─── Animated Loading Carousel Modal / Banner ─── */
+  .carousel-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 9, 18, 0.76);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .carousel-backdrop.open {
+    display: flex;
+    animation: fadeSlide 0.16s ease-out;
+  }
+
+  .carousel-card {
+    width: min(680px, 92vw);
+    background: linear-gradient(180deg, #111b30 0%, #0b1222 100%);
+    border: 1px solid var(--border-bright);
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .carousel-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .orbital-ring {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid rgba(56, 189, 248, 0.18);
+    border-top-color: var(--cyan);
+    border-right-color: var(--violet);
+    animation: spin 0.85s linear infinite;
+    flex-shrink: 0;
+  }
+
+  .carousel-track-bar {
+    height: 5px;
+    background: #182540;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .carousel-track-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--violet), var(--emerald));
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+
+  .carousel-slides {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .c-slide {
+    background: #0c1426;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    opacity: 0.48;
+    transform: scale(0.98);
+    transition: all 0.25s ease;
+  }
+
+  .c-slide.active {
+    opacity: 1;
+    transform: scale(1.01);
+    border-color: var(--cyan);
+    background: rgba(56, 189, 248, 0.09);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.14);
+  }
+
+  .c-slide.done {
+    opacity: 0.9;
+    transform: scale(1);
+    border-color: rgba(16, 185, 129, 0.45);
+    background: rgba(16, 185, 129, 0.08);
+  }
+
+  .c-slide-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .c-slide-detail {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.38;
+  }
+
+  /* ─── Toast Stack ─── */
+  .toast-stack {
+    position: fixed;
+    bottom: 18px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 120;
+  }
+
+  .toast {
+    background: #101b30;
+    border: 1px solid var(--border-bright);
+    border-left: 4px solid var(--emerald);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    animation: fadeSlide 0.2s ease-out;
+    max-width: 420px;
+  }
+  .toast.err { border-left-color: var(--rose); }
+</style>
+</head>
+<body>
+
+<!-- ─── PERSISTENT TOP COMMAND HEADER ─── -->
+<header class="topbar">
+  <div class="brand-wrap">
+    <div class="brand-logo">CB</div>
+    <div>
+      <div class="brand-title">
+        <h1>CanaryBrake</h1>
+        <span id="incidentBadge" class="incident-pill">
+          <span class="pulse-dot"></span>
+          <span id="incidentText">ALL SYSTEMS NOMINAL</span>
+        </span>
+      </div>
+      <div class="brand-sub">
+        Olist Marketplace Production Replay (98,665 Real Orders · 3,095 Merchants) · Cross-System Synapse MCP Copilot
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn" id="btnStream" onclick="toggleStream()">▶ Live Stream (5/s)</button>
+    <button class="btn" id="btnStep60" onclick="stepRealOrders(60)">+60 Real Orders</button>
+    <button class="btn discover-btn" onclick="switchTab('discover')">⚡ Live --discover</button>
+    <button class="btn" id="btnRefreshMcp" onclick="refreshMcpWithCarousel()">↻ Refresh MCP</button>
+    <button class="btn danger-soft" id="btnResetDemo" onclick="resetDemoWithCarousel()">↺ Reset Demo</button>
+    <a href="/" class="btn" style="text-decoration:none;">Studio View</a>
+  </div>
+</header>
+
+<!-- ─── PERSISTENT KPI RIBBON ─── -->
+<section class="kpi-ribbon">
+  <div class="ribbon-card">
+    <div>
+      <div class="ribbon-label">Olist Replay Stream</div>
+      <div class="ribbon-val" id="ribDispatched">0</div>
+      <div class="ribbon-sub" id="ribStreamState">Paused · Peak #35,856</div>
+    </div>
+  </div>
+  <div class="ribbon-card">
+    <div>
+      <div class="ribbon-label">Captured GMV (Settled)</div>
+      <div class="ribbon-val" id="ribCaptured" style="color:#34d399;">$0.00</div>
+      <div class="ribbon-sub" id="ribCapturedSub">0 settled checkouts</div>
+    </div>
+  </div>
+  <div class="ribbon-card" id="ribStrandedCard">
+    <div>
+      <div class="ribbon-label">Stranded Bank Holds</div>
+      <div class="ribbon-val" id="ribStranded">$0.00</div>
+      <div class="ribbon-sub" id="ribStrandedSub">0 uncaptured holds</div>
+    </div>
+  </div>
+  <div class="ribbon-card">
+    <div>
+      <div class="ribbon-label">Idempotent Rescued</div>
+      <div class="ribbon-val" id="ribReplayed" style="color:#38bdf8;">$0.00</div>
+      <div class="ribbon-sub" id="ribReplayedSub">0 replayed · 0 dup charges</div>
+    </div>
+  </div>
+  <div class="ribbon-card">
+    <div>
+      <div class="ribbon-label">Synapse MCP Surface</div>
+      <div class="ribbon-val" id="ribMcpTools" style="color:#e9d5ff;">9 Tools</div>
+      <div class="ribbon-sub" id="ribMcpSub">3 Active MCP Servers</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WORKSPACE TABS BAR ─── -->
+<nav class="tabs-nav">
+  <div class="tabs-list">
+    <button class="tab-btn active" data-tab="command" onclick="switchTab('command')">
+      🧭 Command &amp; AI Copilot
+      <span class="tab-badge" id="badgeCommand">Playbook</span>
+    </button>
+    <button class="tab-btn" data-tab="gateway" onclick="switchTab('gateway')">
+      🚩 System 1 · Go Flag Gateway
+      <span class="tab-badge" id="badgeGateway">Go :8081</span>
+    </button>
+    <button class="tab-btn" data-tab="ledger" onclick="switchTab('ledger')">
+      💳 System 2 · Payment &amp; SLA Ledger
+      <span class="tab-badge" id="badgeLedger">Python :8082</span>
+    </button>
+    <button class="tab-btn" data-tab="discover" onclick="switchTab('discover')">
+      ⚡ Live Track 3 Evolution · <code>--discover</code>
+      <span class="tab-badge purple" id="badgeDiscover">4 Go Tools</span>
+    </button>
+  </div>
+
+  <div class="mcp-server-pills" id="headerServerPills"></div>
+</nav>
+
+<!-- ─── MAIN TABBED WORKSPACE ─── -->
+<main class="workspace">
+
+  <!-- ================= TAB 1: COMMAND & AI COPILOT ================= -->
+  <section class="tab-panel active" id="tab-command">
+    <div class="command-grid">
+      <div class="left-rail">
+        <div class="surface-card">
+          <div class="card-header">
+            <span class="card-title">Guided Track 3 Incident Runbook</span>
+            <span style="font-size:11px;color:var(--muted);">Click any step</span>
+          </div>
+          <div class="playbook-list">
+            <button class="step-card" id="stepCard1" onclick="runPlaybookStep(1)">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Triage Canary vs. Noisy False Alarm</h4>
+                <p>Join Go HTTP cohorts with Python ledger holds to prove <code>smart_retry_v1</code> loses $0 while <code>checkout_gateway_v2</code> strands multi-installment money.</p>
+              </div>
+            </button>
+            <button class="step-card" id="stepCard2" onclick="runPlaybookStep(2)">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Audit Active Bank Holds (Double-Charge Risk)</h4>
+                <p>Verify <code>bank_hold_active</code> &amp; <code>idempotency_key</code> locks for breaching Enterprise Tier-1 merchants before any retry.</p>
+              </div>
+            </button>
+            <button class="step-card" id="stepCard3" onclick="runPlaybookStep(3)">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Hit Pre-Discover Capability Gap</h4>
+                <p>Ask Copilot to quarantine affected Tier-1 merchants — exposing that <code>flag-edge-gateway</code> only exposes 4 read tools.</p>
+              </div>
+            </button>
+            <button class="step-card" id="stepCard4" onclick="switchTab('discover')">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <h4>Live Evolution: <code>synapse build --discover</code></h4>
+                <p>Add cohort-exclusion route in Go, update Hosted Server <code>e2d50a55-…</code> in place (4 → 5 tools), and hot-reload MCP.</p>
+              </div>
+            </button>
+            <button class="step-card" id="stepCard5" onclick="runPlaybookStep(4)">
+              <div class="step-num">5</div>
+              <div class="step-body">
+                <h4>Targeted Quarantine + Dry-Run Hold Preview</h4>
+                <p>Call the newly discovered 5th Go tool + run Python Custom tool with <code>confirm=False</code> safety gate.</p>
+              </div>
+            </button>
+            <button class="step-card" id="stepCard6" onclick="runPlaybookStep(5)">
+              <div class="step-num">6</div>
+              <div class="step-body">
+                <h4>Confirm Atomic Replay &amp; SHA-256 Receipt</h4>
+                <p>Approve <code>confirm=True</code> to settle stranded holds idempotently ($0 duplicate charges) and restore 100% SLA.</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="surface-card">
+          <div class="card-header">
+            <span class="card-title">Cross-Silo Live Snapshot</span>
+            <div>
+              <button class="link-btn" onclick="switchTab('gateway')">Silo 1 →</button>
+              &nbsp;·&nbsp;
+              <button class="link-btn" onclick="switchTab('ledger')">Silo 2 →</button>
+            </div>
+          </div>
+          <div id="miniCrossSummary" style="display:flex;flex-direction:column;gap:8px;font-size:12px;"></div>
+        </div>
+      </div>
+
+      <div class="copilot-studio">
+        <div class="studio-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <strong style="font-size:14px;">CanaryBrake Cross-System MCP Copilot</strong>
+            <span class="pill rep">Gemini 3.5 Flash · Live MCP Stdio</span>
+          </div>
+          <button class="btn" style="padding:4px 10px;font-size:11.5px;" onclick="clearChat()">Clear Conversation</button>
+        </div>
+
+        <div class="chat-stream" id="chatLog">
+          <div class="msg-bubble bot">
+            <strong>CanaryBrake Incident Copilot Online.</strong><br/>
+            Connected via live MCP <code>stdio</code> transports to <strong>Go <code>flag-edge-gateway</code></strong> (Hosted Auto), <strong>Python <code>payment-sla-ledger</code></strong> (Hosted Auto), and <strong>Python <code>replay-stranded-merchant-holds</code></strong> (Custom Composed). Select Step 1 on the left or ask any question across both systems.
+          </div>
+        </div>
+
+        <form class="chat-composer" onsubmit="submitChat(event)">
+          <input id="chatInput" type="text" placeholder="Ask a cross-system question spanning Go Flag Gateway (:8081) and Python Payment Ledger (:8082)..." autocomplete="off" />
+          <button type="submit" class="btn primary" id="sendBtn">Ask Copilot →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TAB 2: GO FLAG GATEWAY (:8081) ================= -->
+  <section class="tab-panel" id="tab-gateway">
+    <div class="silo-banner">
+      <div>
+        <strong>Silo Boundary — System 1: <code>flag-edge-gateway</code> (Go 1.23 · SQLite WAL <code>edge_flags.db</code>)</strong><br/>
+        <span style="color:var(--muted);">Evaluates deterministic <code>SHA-256(flag_key:merchant_id) % 100</code> cohorts and logs HTTP status + wall-clock latency. Contains <strong>zero</strong> bank-hold, dollar value, or Merchant SLA columns.</span>
+      </div>
+      <span class="srv-tag go">Hosted Server ID: e2d50a55-…</span>
+    </div>
+
+    <div class="flags-grid" id="fullFlagsGrid"></div>
+
+    <div class="data-table-wrap">
+      <div class="card-header">
+        <span class="card-title">Cohort HTTP Status, Retry Recovery &amp; Measured Latency Breakdown</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Flag Cohort</th>
+            <th>Active Variant</th>
+            <th>Total Checkouts</th>
+            <th>200 OK</th>
+            <th>503 Contention → Retry Recovered</th>
+            <th>504 Capture Timeout</th>
+            <th>Measured p95 Latency</th>
+            <th>504 Impacted Merchants</th>
+          </tr>
+        </thead>
+        <tbody id="fullCohortTable"></tbody>
+      </table>
+    </div>
+
+    <div class="data-table-wrap">
+      <div class="card-header">
+        <span class="card-title">Recent Real-Time Edge Checkout Routing Stream</span>
+        <div class="filter-pills" id="edgeFilterPills">
+          <button class="filter-pill active" onclick="setEdgeFilter('ALL')">All</button>
+          <button class="filter-pill" onclick="setEdgeFilter('504')">504 Timeouts Only</button>
+          <button class="filter-pill" onclick="setEdgeFilter('RETRY')">503→200 Retries</button>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Olist Order ID</th>
+            <th>Merchant ID</th>
+            <th>Evaluated Flag</th>
+            <th>Routed Variant</th>
+            <th>Initial → Final HTTP</th>
+            <th>Retries</th>
+            <th>Wall-Clock Latency</th>
+          </tr>
+        </thead>
+        <tbody id="fullEdgeStreamTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= TAB 3: PYTHON PAYMENT LEDGER (:8082) ================= -->
+  <section class="tab-panel" id="tab-ledger">
+    <div class="silo-banner py">
+      <div>
+        <strong>Silo Boundary — System 2: <code>payment-sla-ledger</code> (Python FastAPI · SQLite WAL <code>payment_ledger.db</code>)</strong><br/>
+        <span style="color:var(--muted);">Enforces <code>AUTHORIZED_HOLD</code> → <code>CAPTURED</code> / <code>HOLD_STRANDED</code> / <code>REPLAYED_SAFE</code>, <code>409 DOUBLE_CHARGE_PREVENTED</code> idempotency locks, and contractual Merchant SLAs. Contains <strong>zero</strong> feature-flag columns.</span>
+      </div>
+      <span class="srv-tag py">Hosted Server ID: 059607eb-…</span>
+    </div>
+
+    <div class="data-table-wrap">
+      <div class="card-header">
+        <span class="card-title">Contractual Enterprise Tier-1 &amp; Growth Tier-2 Merchant SLA Watchlist</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Real Olist Merchant</th>
+            <th>Merchant ID</th>
+            <th>Contract Tier</th>
+            <th>Checkouts</th>
+            <th>Capture Rate vs. SLA Target</th>
+            <th>Stranded Bank Holds</th>
+            <th>SLA Status &amp; Breach Timer</th>
+          </tr>
+        </thead>
+        <tbody id="fullSlaTable"></tbody>
+      </table>
+    </div>
+
+    <div class="data-table-wrap">
+      <div class="card-header">
+        <span class="card-title">Live Payment Authorization &amp; Capture State Machine</span>
+        <div class="filter-pills" id="ledgerFilterPills">
+          <button class="filter-pill active" onclick="setLedgerFilter('ALL')">All Intents</button>
+          <button class="filter-pill" onclick="setLedgerFilter('HOLD_STRANDED')">HOLD_STRANDED Only</button>
+          <button class="filter-pill" onclick="setLedgerFilter('REPLAYED_SAFE')">REPLAYED_SAFE</button>
+          <button class="filter-pill" onclick="setLedgerFilter('CAPTURED')">CAPTURED</button>
+        </div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Olist Order ID</th>
+            <th>Merchant</th>
+            <th>SLA Tier</th>
+            <th>Payment Rail</th>
+            <th>Installments</th>
+            <th>Amount</th>
+            <th>Bank Hold Lock</th>
+            <th>Ledger State</th>
+          </tr>
+        </thead>
+        <tbody id="fullLedgerIntentsTable"></tbody>
+      </table>
+    </div>
+
+    <div class="data-table-wrap">
+      <div class="card-header">
+        <span class="card-title">Cryptographic SHA-256 Idempotent Replay Audit Receipts</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Receipt ID</th>
+            <th>Quarantined &amp; Replayed Merchants</th>
+            <th>Orders Rescued</th>
+            <th>Settled Value</th>
+            <th>SHA-256 Audit Signature</th>
+            <th>Issued Timestamp (UTC)</th>
+          </tr>
+        </thead>
+        <tbody id="auditReceiptsTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= TAB 4: LIVE EVOLUTION (synapse build --discover) ================= -->
+  <section class="tab-panel" id="tab-discover">
+    <div class="silo-banner purple">
+      <div>
+        <strong>Track 3 Mandatory Live Evolution — Incremental Surface Discovery (<code>synapse build --discover</code>)</strong><br/>
+        <span style="color:var(--muted);">Exposes targeted merchant cohort exclusion in Go without changing <code>SYNAPSE_SERVER_ID</code> (<code>e2d50a55-9ebc-4aee-8a17-b47ced0025aa</code>), while keeping internal/destructive endpoints withheld.</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn primary" id="btnRunEnableDiscover" onclick="executeLiveDiscover('enable')">
+          ⚡ Add 5th Endpoint &amp; Run synapse build --discover
+        </button>
+        <button class="btn" id="btnRunDisableDiscover" onclick="executeLiveDiscover('disable')">
+          ↩ Restore 4-Tool Baseline
+        </button>
+      </div>
+    </div>
+
+    <div class="discover-grid">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="surface-card">
+          <div class="card-header">
+            <span class="card-title">Live MCP Server Registry &amp; Exposed Tool Schemas</span>
+          </div>
+          <div id="discoverRegistryCards" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+
+        <div class="surface-card">
+          <div class="card-header">
+            <span class="card-title">Live On-Disk Go Source: <code>services/flag-edge-gateway/discover_routes.go</code></span>
+            <span class="pill" id="discoverSourceBadge">4-Tool Baseline</span>
+          </div>
+          <pre class="code-box" id="discoverGoSource">Loading Go source…</pre>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="surface-card">
+          <div class="card-header">
+            <span class="card-title">Live <code>synapse build --discover</code> Output Log</span>
+          </div>
+          <pre class="cli-box" id="discoverCliOutput">Click "⚡ Add 5th Endpoint & Run synapse build --discover" above to add POST /api/flags/{flag_key}/exclude-merchants/{merchant_ids}, recompile Go, run `synapse build --discover` against Hosted Server e2d50a55-9ebc-4aee-8a17-b47ced0025aa, and hot-reload MCP stdio sessions.</pre>
+        </div>
+
+        <div class="surface-card">
+          <div class="card-header">
+            <span class="card-title">Least-Privilege Endpoint Curation Rationale (Judging Criterion)</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Service</th><th>Exposed to MCP</th><th>Intentionally Withheld</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Go <code>:8081</code></td>
+                <td>4 telemetry GET routes (+1 targeted cohort-exclude POST via <code>--discover</code>)</td>
+                <td><code>POST /checkout</code> (live buyer ingress), <code>POST /internal/reset</code> (destructive wipe)</td>
+              </tr>
+              <tr>
+                <td>Python <code>:8082</code></td>
+                <td>4 read SLA/hold GET routes + 1 Custom <code>confirm: bool</code> guarded replay tool</td>
+                <td><code>POST /internal/authorize</code>, <code>capture-v1</code>, <code>capture-v2</code>, <code>reset</code> (raw mutations)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ─── ANIMATED MULTI-STEP LOADING CAROUSEL ─── -->
+<div class="carousel-backdrop" id="opCarousel">
+  <div class="carousel-card">
+    <div class="carousel-top">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="orbital-ring"></div>
+        <div>
+          <div style="font-size:15px;font-weight:700;" id="carouselTitle">Executing Operation…</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="carouselSubtitle">Synchronizing live microservices &amp; Synapse MCP transports</div>
+        </div>
+      </div>
+      <span class="pill rep" id="carouselTimer">0.0s</span>
+    </div>
+
+    <div class="carousel-track-bar">
+      <div class="carousel-track-fill" id="carouselProgressFill" style="width:25%;"></div>
+    </div>
+
+    <div class="carousel-slides" id="carouselSlides"></div>
+  </div>
+</div>
+
+<!-- ─── TOAST NOTIFICATIONS ─── -->
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+const PRESETS = {
+  1: "Gateway error alerts are firing on both smart_retry_v1 and checkout_gateway_v2. Cross-reference both systems to tell me which flag cohort is actually stranding merchant money in uncaptured holds versus recovering on retry, how much money is stranded, and which Enterprise Tier-1 merchants are breaching or at risk of breaching SLA.",
+  2: "Before we reroute or retry failed checkouts for those impacted Enterprise Tier-1 merchants on checkout_gateway_v2, inspect their orders across both systems: which orders already have active customer bank authorization holds that would double-charge customers on a naive retry?",
+  3: "Exclude ONLY the impacted Enterprise Tier-1 merchants from checkout_gateway_v2 without turning off the flag globally, and preview a safe hold replay for them.",
+  4: "Now that flag-edge-gateway has been updated via synapse build --discover, exclude the impacted Enterprise Tier-1 merchants from checkout_gateway_v2 immediately, and run a dry-run preview (confirm=False) of replay_stranded_merchant_holds for them.",
+  5: "Confirm: execute replay_stranded_merchant_holds with confirm=True for those excluded Enterprise Tier-1 merchants and give me the SHA-256 recovery receipt."
+};
+
+let latestState = null;
+let currentTab = "command";
+let edgeFilter = "ALL";
+let ledgerFilter = "ALL";
+let carouselLocalTimer = null;
+let carouselStartMs = 0;
+
+function esc(s) {
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function toast(msg, isErr = false) {
+  const stack = document.getElementById("toastStack");
+  const el = document.createElement("div");
+  el.className = "toast" + (isErr ? " err" : "");
+  el.innerHTML = msg;
+  stack.appendChild(el);
+  setTimeout(() => { el.remove(); }, 4600);
+}
+
+function switchTab(tabId) {
+  currentTab = tabId;
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === tabId);
+  });
+  document.querySelectorAll(".tab-panel").forEach(p => {
+    p.classList.toggle("active", p.id === `tab-${tabId}`);
+  });
+  if (tabId === "discover") {
+    loadDiscoverSource();
+  }
+}
+
+function setEdgeFilter(f) {
+  edgeFilter = f;
+  document.querySelectorAll("#edgeFilterPills .filter-pill").forEach(btn => {
+    btn.classList.toggle("active", btn.textContent.includes(f === "ALL" ? "All" : (f === "504" ? "504" : "503")));
+  });
+  if (latestState) renderState(latestState);
+}
+
+function setLedgerFilter(f) {
+  ledgerFilter = f;
+  document.querySelectorAll("#ledgerFilterPills .filter-pill").forEach(btn => {
+    btn.classList.toggle("active", (f === "ALL" && btn.textContent.startsWith("All")) || btn.textContent.startsWith(f));
+  });
+  if (latestState) renderState(latestState);
+}
+
+/* ─── Loading Carousel Engine ─── */
+function showCarousel(title, fallbackSteps) {
+  const el = document.getElementById("opCarousel");
+  document.getElementById("carouselTitle").textContent = title;
+  carouselStartMs = performance.now();
+  renderCarouselSteps(fallbackSteps, 0);
+  el.classList.add("open");
+
+  clearInterval(carouselLocalTimer);
+  carouselLocalTimer = setInterval(async () => {
+    const elapsed = ((performance.now() - carouselStartMs) / 1000).toFixed(1);
+    document.getElementById("carouselTimer").textContent = `${elapsed}s`;
+    try {
+      const r = await fetch("/api/ops/status");
+      const st = await r.json();
+      if (st.active && st.steps && st.steps.length) {
+        document.getElementById("carouselTitle").textContent = st.title || title;
+        renderCarouselSteps(st.steps, st.step_index || 0);
+      }
+    } catch (_) {}
+  }, 220);
+}
+
+function renderCarouselSteps(steps, idx) {
+  const pct = Math.min(100, Math.round(((idx + 0.65) / Math.max(1, steps.length)) * 100));
+  document.getElementById("carouselProgressFill").style.width = `${pct}%`;
+  document.getElementById("carouselSlides").innerHTML = steps.map((s, i) => {
+    const state = s.state || (i < idx ? "done" : (i === idx ? "active" : "pending"));
+    const icon = state === "done" ? "✓" : (state === "active" ? '<span class="mini-spin"></span>' : `0${i+1}`);
+    return `<div class="c-slide ${state}">
+      <div class="c-slide-head">
+        <span>${icon}</span>
+        <span>${esc(s.label)}</span>
+      </div>
+      <div class="c-slide-detail">${esc(s.detail)}</div>
+    </div>`;
+  }).join("");
+}
+
+function hideCarousel() {
+  clearInterval(carouselLocalTimer);
+  document.getElementById("carouselProgressFill").style.width = "100%";
+  setTimeout(() => {
+    document.getElementById("opCarousel").classList.remove("open");
+  }, 220);
+}
+
+/* ─── Markdown Renderer (Tables + Headings + Lists + Code) ─── */
+function inlineFmt(s) {
+  return esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+}
+
+function renderMd(md) {
+  const lines = String(md || "").split("\n");
+  let out = [], inUl = false, tableRows = [];
+
+  const flushList = () => { if (inUl) { out.push("</ul>"); inUl = false; } };
+  const flushTable = () => {
+    if (!tableRows.length) return;
+    const filtered = tableRows.filter(r => !/^\s*\|?[\s:-]+\|[\s|:-]*$/.test(r));
+    if (filtered.length) {
+      out.push('<table class="md-table">');
+      filtered.forEach((row, idx) => {
+        const cells = row.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+        const tag = idx === 0 ? "th" : "td";
+        out.push("<tr>" + cells.map(c => `<${tag}>${inlineFmt(c)}</${tag}>`).join("") + "</tr>");
+      });
+      out.push("</table>");
+    }
+    tableRows = [];
+  };
+
+  for (const ln of lines) {
+    if (ln.trim().startsWith("|") && ln.trim().endsWith("|")) {
+      flushList();
+      tableRows.push(ln);
+      continue;
+    } else {
+      flushTable();
+    }
+    const h = ln.match(/^#{1,4}\s+(.*)$/);
+    if (h) {
+      flushList();
+      out.push(`<h4>${inlineFmt(h[1])}</h4>`);
+      continue;
+    }
+    const li = ln.match(/^\s*(?:[-*]|\d+\.)\s+(.*)$/);
+    if (li) {
+      if (!inUl) { out.push("<ul>"); inUl = true; }
+      out.push(`<li>${inlineFmt(li[1])}</li>`);
+    } else {
+      flushList();
+      if (ln.trim()) out.push(`<p style="margin-bottom:6px;">${inlineFmt(ln)}</p>`);
+    }
+  }
+  flushList();
+  flushTable();
+  return out.join("");
+}
+
+/* ─── State Polling & Rendering ─── */
+async function pollState() {
+  try {
+    const res = await fetch("/api/live-state");
+    if (!res.ok) return;
+    const data = await res.json();
+    latestState = data;
+    renderState(data);
+  } catch (_) {}
+}
+
+async function loadDiscoverSource() {
+  try {
+    const r = await fetch("/api/discover/source");
+    const d = await r.json();
+    document.getElementById("discoverGoSource").textContent = d.source_code || "";
+    const badge = document.getElementById("discoverSourceBadge");
+    badge.textContent = d.enabled ? "5-Tool Evolved Surface Active" : "4-Tool Read-Only Baseline";
+    badge.className = "pill " + (d.enabled ? "ok" : "warn");
+  } catch (_) {}
+}
+
+function renderState(data) {
+  const rep = data.replayer || {};
+  const sum = data.ledger?.summary || {};
+  const mcp = data.mcp_registry || {};
+  const servers = mcp.servers || [];
+  const flags = data.gateway?.flags || [];
+  const cohorts = data.gateway?.cohorts || [];
+  const slas = data.ledger?.merchant_slas || [];
+  const audits = data.ledger?.audit_receipts || [];
+
+  const strandedCnt = sum.stranded_hold_count || 0;
+  const replayedCnt = sum.replayed_safe_count || 0;
+  const goSrv = servers.find(s => s.server_key === "flag_edge_gateway");
+  const goTools = goSrv ? goSrv.tool_count : 4;
+
+  // Incident Header Pill
+  const incBadge = document.getElementById("incidentBadge");
+  const incText = document.getElementById("incidentText");
+  if (strandedCnt > 0) {
+    incBadge.className = "incident-pill active";
+    incText.textContent = `INCIDENT ACTIVE · ${strandedCnt} Stranded Holds (${sum.stranded_amount_formatted})`;
+  } else if (replayedCnt > 0) {
+    incBadge.className = "incident-pill";
+    incText.textContent = `INCIDENT RESOLVED · ${replayedCnt} Holds Rescued ($0.00 Stranded)`;
+  } else {
+    incBadge.className = "incident-pill";
+    incText.textContent = `STANDBY · Ready for Traffic`;
+  }
+
+  // Stream button
+  const btnStream = document.getElementById("btnStream");
+  if (rep.running) {
+    btnStream.className = "btn stream-on";
+    btnStream.textContent = `⏸ Pause Stream (${rep.rps || 5}/s)`;
+  } else {
+    btnStream.className = "btn";
+    btnStream.textContent = `▶ Live Stream (5/s)`;
+  }
+
+  // Ribbon KPIs
+  document.getElementById("ribDispatched").textContent = (rep.total_dispatched || 0).toLocaleString();
+  document.getElementById("ribStreamState").textContent = rep.running
+    ? `Streaming live · Cursor #${(rep.cursor_seq_id || 0).toLocaleString()}`
+    : `Paused · Cursor #${(rep.cursor_seq_id || 0).toLocaleString()}`;
+  document.getElementById("ribCaptured").textContent = sum.captured_amount_formatted || "$0.00";
+  document.getElementById("ribCapturedSub").textContent = `${sum.captured_count || 0} settled checkouts`;
+  document.getElementById("ribStranded").textContent = sum.stranded_amount_formatted || "$0.00";
+  document.getElementById("ribStrandedSub").textContent = `${strandedCnt} active bank holds`;
+  document.getElementById("ribStrandedCard").className = strandedCnt > 0 ? "ribbon-card alert" : "ribbon-card";
+  document.getElementById("ribReplayed").textContent = sum.replayed_amount_formatted || "$0.00";
+  document.getElementById("ribReplayedSub").textContent = `${replayedCnt} rescued · 0 dup charges`;
+  document.getElementById("ribMcpTools").textContent = `${mcp.total_tools || 9} Tools`;
+  document.getElementById("ribMcpSub").textContent = goTools >= 5 ? "Live --discover Active (+1)" : "Baseline Surface (4+4+1)";
+
+  // Tab Badges
+  const bLedger = document.getElementById("badgeLedger");
+  bLedger.textContent = strandedCnt > 0 ? `${strandedCnt} Stranded` : "0 Stranded";
+  bLedger.className = "tab-badge " + (strandedCnt > 0 ? "bad" : "good");
+
+  const bDisc = document.getElementById("badgeDiscover");
+  bDisc.textContent = goTools >= 5 ? "5 Go Tools ✓" : "4 Go Tools";
+  bDisc.className = "tab-badge " + (goTools >= 5 ? "good" : "purple");
+  document.getElementById("stepCard4").classList.toggle("done", goTools >= 5);
+  document.getElementById("stepCard6").classList.toggle("done", replayedCnt > 0 && strandedCnt === 0);
+
+  // Header Server Pills
+  document.getElementById("headerServerPills").innerHTML = servers.map(s => {
+    const up = s.server_key === "flag_edge_gateway" && s.tool_count >= 5;
+    return `<span class="srv-pill ${up ? "upgraded" : ""}" title="${esc((s.tools || []).join(", "))}">
+      ${esc(s.server_label)}: <strong>${s.tool_count}</strong>
+    </span>`;
+  }).join("");
+
+  // Tab 1 Mini Cross-Silo Summary
+  const gwCanary = cohorts.find(c => c.flag_key === "checkout_gateway_v2");
+  const retryCanary = cohorts.find(c => c.flag_key === "smart_retry_v1");
+  const breaching = slas.filter(m => m.stranded_holds > 0 && m.sla_tier === "ENTERPRISE_TIER_1");
+  document.getElementById("miniCrossSummary").innerHTML = `
+    <div style="padding:9px 11px;background:var(--panel-2);border-radius:8px;border:1px solid var(--border);">
+      <div style="color:var(--muted);font-size:11px;">Silo 1 · Go Flag Gateway</div>
+      <div style="margin-top:4px;font-family:var(--mono);font-size:11.5px;">
+        • <strong>smart_retry_v1</strong>: ${retryCanary ? `${retryCanary.initial_503_count}× 503 → ${retryCanary.retry_recovered_count} Retry OK` : "0"}<br/>
+        • <strong>checkout_gateway_v2</strong>: <span style="color:${gwCanary && gwCanary.timeout_504_count > 0 ? "#fda4af" : "#6ee7b7"};">${gwCanary ? `${gwCanary.timeout_504_count}× 504 Timeouts` : "0"}</span>
+      </div>
+    </div>
+    <div style="padding:9px 11px;background:var(--panel-2);border-radius:8px;border:1px solid var(--border);">
+      <div style="color:var(--muted);font-size:11px;">Silo 2 · Python SLA Ledger</div>
+      <div style="margin-top:4px;font-family:var(--mono);font-size:11.5px;">
+        • Tier-1 Merchants Impacted: <strong>${breaching.length}</strong><br/>
+        • Audit Receipts Issued: <strong>${audits.length}</strong>
+      </div>
+    </div>
+  `;
+
+  // Tab 2: Go Flag Gateway Full View
+  document.getElementById("fullFlagsGrid").innerHTML = flags.map(f => {
+    const ex = f.excluded_merchants || [];
+    return `<div class="flag-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="font-family:var(--mono);font-size:13.5px;">${esc(f.flag_key)}</strong>
+        <span class="pill rep">${f.rollout_pct}% → ${esc(f.active_variant)}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.45;">${esc(f.description)}</div>
+      <div class="rollout-bar"><div class="rollout-fill" style="width:${f.rollout_pct}%;"></div></div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);">Fallback: ${esc(f.fallback_variant)}</div>
+      ${ex.length ? `<div class="quarantine-banner">✓ Quarantined (${ex.length} merchant${ex.length===1?"":"s"} → ${esc(f.fallback_variant)}): ${ex.map(x=>x.slice(0,10)+"…").join(", ")}</div>` : ""}
+    </div>`;
+  }).join("");
+
+  document.getElementById("fullCohortTable").innerHTML = cohorts.length ? cohorts.map(c => `
+    <tr>
+      <td><strong>${esc(c.flag_key)}</strong></td>
+      <td>${esc(c.variant)}</td>
+      <td>${c.total_requests}</td>
+      <td><span class="pill ok">${c.ok_200_count}</span></td>
+      <td>${c.initial_503_count > 0 ? `<span class="pill warn">${c.initial_503_count} → ${c.retry_recovered_count} Recovered</span>` : "0"}</td>
+      <td>${c.timeout_504_count > 0 ? `<span class="pill bad">${c.timeout_504_count} (504 Timeout)</span>` : '<span class="pill ok">0</span>'}</td>
+      <td>${c.p95_latency_ms} ms</td>
+      <td>${c.impacted_merchant_count}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="8" style="color:var(--muted);">No checkout traffic recorded yet.</td></tr>`;
+
+  let edgeRows = data.gateway?.recent_telemetry || [];
+  if (edgeFilter === "504") edgeRows = edgeRows.filter(r => r.final_status === 504);
+  if (edgeFilter === "RETRY") edgeRows = edgeRows.filter(r => r.initial_status === 503);
+  document.getElementById("fullEdgeStreamTable").innerHTML = edgeRows.slice(0, 25).map(r => {
+    const cls = r.final_status === 200 ? (r.initial_status === 503 ? "warn" : "ok") : "bad";
+    return `<tr>
+      <td>${esc(r.order_id.slice(0,12))}…</td>
+      <td>${esc(r.merchant_id.slice(0,12))}…</td>
+      <td>${esc(r.flag_key)}</td>
+      <td>${esc(r.variant)}</td>
+      <td><span class="pill ${cls}">${r.initial_status} → ${r.final_status}</span></td>
+      <td>${r.retry_attempts}</td>
+      <td>${r.latency_ms} ms</td>
+    </tr>`;
+  }).join("");
+
+  // Tab 3: Python Ledger Full View
+  document.getElementById("fullSlaTable").innerHTML = slas.length ? slas.map(m => {
+    const cls = m.sla_status === "HEALTHY" ? "ok" : (m.sla_status.includes("BREACH") ? "bad" : "warn");
+    const capRate = m.capture_success_pct ?? (m.total_orders ? ((m.settled_orders / m.total_orders) * 100).toFixed(1) : "100.0");
+    const targetRate = m.sla_target_pct ?? (100 - (m.max_allowed_stranded_pct || 5)).toFixed(1);
+    return `<tr>
+      <td><strong>${esc(m.display_name)}</strong></td>
+      <td>${esc(m.merchant_id.slice(0,12))}…</td>
+      <td>${esc(m.sla_tier)}</td>
+      <td>${m.total_orders}</td>
+      <td><strong>${capRate}%</strong> <span style="color:var(--muted);">(Target ≥${targetRate}%)</span></td>
+      <td>${m.stranded_holds > 0 ? `<span class="pill bad">${m.stranded_holds} (${m.stranded_amount_formatted})</span>` : '<span class="pill ok">0 ($0.00)</span>'}</td>
+      <td><span class="pill ${cls}">${esc(m.sla_status)} · ${m.minutes_to_sla_breach}m window</span></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="7" style="color:var(--muted);">No merchant intents recorded yet.</td></tr>`;
+
+  let intents = data.ledger?.recent_intents || [];
+  if (ledgerFilter !== "ALL") intents = intents.filter(i => i.status === ledgerFilter);
+  document.getElementById("fullLedgerIntentsTable").innerHTML = intents.slice(0, 25).map(i => {
+    const cls = i.status === "CAPTURED" ? "ok" : (i.status === "HOLD_STRANDED" ? "bad" : "rep");
+    return `<tr>
+      <td>${esc(i.order_id.slice(0,12))}…</td>
+      <td>${esc((i.merchant_name || i.merchant_id).slice(0,24))}</td>
+      <td>${esc(i.sla_tier)}</td>
+      <td>${esc(i.payment_method)}</td>
+      <td>${i.installments}x</td>
+      <td>$${(i.amount_cents / 100).toFixed(2)}</td>
+      <td>${i.bank_hold_active ? '<span class="pill warn">LOCKED_HOLD</span>' : '<span class="pill ok">SETTLED</span>'}</td>
+      <td><span class="pill ${cls}">${esc(i.status)}</span></td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("auditReceiptsTable").innerHTML = audits.length ? audits.map(a => `
+    <tr>
+      <td><strong>${esc(a.receipt_id)}</strong></td>
+      <td>${esc(a.merchant_ids_csv.slice(0,36))}${a.merchant_ids_csv.length > 36 ? "…" : ""}</td>
+      <td><span class="pill ok">${a.replayed_count} orders</span></td>
+      <td><strong>$${(a.replayed_amount_cents / 100).toFixed(2)}</strong></td>
+      <td>${esc(a.sha256_signature.slice(0,24))}…</td>
+      <td>${esc(a.created_at)}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="6" style="color:var(--muted);">No replay receipts issued yet — run Step 6 after live discover to issue a signed SHA-256 receipt.</td></tr>`;
+
+  // Tab 4: Live Discover Registry Cards
+  document.getElementById("discoverRegistryCards").innerHTML = servers.map(s => {
+    const tagCls = s.server_key === "flag_edge_gateway" ? "go" : (s.server_key === "payment_sla_ledger" ? "py" : "custom");
+    return `<div style="padding:11px 13px;background:var(--panel-2);border:1px solid var(--border);border-radius:9px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <strong>${esc(s.server_label)}</strong>
+        <span class="srv-tag ${tagCls}">${esc(s.badge)} · ${s.tool_count} tool${s.tool_count===1?"":"s"}</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:7px;">ID: ${esc(s.server_id || "")}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        ${(s.tools || []).map(t => `<span class="pill ${t.includes("exclude") ? "ok" : "rep"}">${esc(t)}</span>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ─── Interactive Actions with Loading Carousels ─── */
+async function toggleStream() {
+  const running = latestState?.replayer?.running;
+  const action = running ? "pause" : "start";
+  await fetch("/api/replayer/control", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(action === "start" ? {action: "start", rps: 5} : {action: "pause"})
+  });
+  await pollState();
+  toast(action === "start" ? "▶ Live Olist order stream started (5 checkouts/sec)" : "⏸ Live Olist order stream paused");
+}
+
+async function stepRealOrders(count) {
+  const btn = document.getElementById("btnStep60");
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="mini-spin"></span> Replaying +${count}…`;
+  try {
+    const res = await fetch("/api/replayer/control", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({action: "step", count})
+    });
+    const d = await res.json();
+    await pollState();
+    toast(`✓ <strong>+${d.stepped} Real Olist Orders Replayed</strong><br/>${d.ok_2xx_in_batch} Settled (${d.settled_amount_formatted || ""}) · ${d.err_5xx_in_batch} Stranded in v2 (${d.stranded_amount_formatted || ""})`);
+  } catch (e) {
+    toast(`Failed to step orders: ${esc(e)}`, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+async function refreshMcpWithCarousel() {
+  const btn = document.getElementById("btnRefreshMcp");
+  btn.disabled = true;
+  showCarousel("Refreshing Multi-Server Synapse MCP Hub", [
+    {label: "Closing stale stdio pipes", detail: "Releasing previous MCP client sessions cleanly", state: "active"},
+    {label: "Syncing Hosted Synapse configs", detail: "Fetching live tool schemas for Go & Python servers", state: "pending"},
+    {label: "Initializing FastMCP server", detail: "Verifying guarded hold-replay tool signature", state: "pending"}
+  ]);
+  try {
+    const res = await fetch("/api/mcp/reload", {method: "POST"});
+    const d = await res.json();
+    await pollState();
+    toast(`✓ <strong>MCP Hub Refreshed</strong> · ${d.mcp_registry?.total_tools || 9} tools active across 3 Synapse servers`);
+  } catch (e) {
+    toast(`MCP refresh failed: ${esc(e)}`, true);
+  } finally {
+    hideCarousel();
+    btn.disabled = false;
+  }
+}
+
+async function resetDemoWithCarousel() {
+  const btn = document.getElementById("btnResetDemo");
+  btn.disabled = true;
+  showCarousel("Resetting CanaryBrake Stage Environment", [
+    {label: "Pausing Olist Order Stream", detail: "Resetting cursor to Black Friday peak (seq #35,856)", state: "active"},
+    {label: "Restoring 4-Tool Go Baseline", detail: "Syncing Hosted Server e2d50a55-… via synapse build --discover", state: "pending"},
+    {label: "Clearing Isolated SQLite WAL DBs", detail: "Wiping edge_flags.db & payment_ledger.db and reloading MCP", state: "pending"},
+    {label: "Replaying 120 Real Olist Checkouts", detail: "Seeding live traffic across v1_stable, smart_retry_v1 & v2_canary", state: "pending"}
+  ]);
+  try {
+    const res = await fetch("/api/demo/reset-all", {method: "POST"});
+    const d = await res.json();
+    document.querySelectorAll(".step-card").forEach(c => c.classList.remove("done"));
+    document.getElementById("chatLog").innerHTML = `<div class="msg-bubble bot"><strong>Stage Reset Complete.</strong> Restored 4-tool Go baseline (<code>9</code> total MCP tools) and replayed <strong>120 real Black Friday Olist orders</strong>. Ready for Step 1.</div>`;
+    await pollState();
+    await loadDiscoverSource();
+    toast(`✓ <strong>Demo Reset Complete</strong> · ${d.mcp_registry?.total_tools || 9} baseline MCP tools · 120 real Olist orders seeded`);
+  } catch (e) {
+    toast(`Reset failed: ${esc(e)}`, true);
+  } finally {
+    hideCarousel();
+    btn.disabled = false;
+  }
+}
+
+async function executeLiveDiscover(mode) {
+  const b1 = document.getElementById("btnRunEnableDiscover");
+  const b2 = document.getElementById("btnRunDisableDiscover");
+  b1.disabled = true; b2.disabled = true;
+  const verb = mode === "enable" ? "Enabling 5th Endpoint" : "Restoring 4-Tool Baseline";
+  showCarousel(`Live Evolution · ${verb} via synapse build --discover`, [
+    {label: "Updating Go Route Surface", detail: "Patching services/flag-edge-gateway/discover_routes.go", state: "active"},
+    {label: "Compiling Go 1.23 & Rescanning", detail: "Running tree-sitter delta scan + synapse build --discover", state: "pending"},
+    {label: "Hot-Restarting Gateway & MCP", detail: "Verifying :8081/health and reloading MCP stdio tool list", state: "pending"}
+  ]);
+  try {
+    const res = await fetch("/api/demo/live-discover", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({mode})
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.detail || "discover failed");
+    document.getElementById("discoverCliOutput").textContent = d.cli_output || "";
+    await loadDiscoverSource();
+    await pollState();
+    toast(mode === "enable"
+      ? `⚡ <strong>synapse build --discover Complete!</strong><br/>Same Server ID kept · Go MCP upgraded <strong>4 → 5 tools</strong>`
+      : `↩ <strong>Restored 4-Tool Baseline</strong> on Hosted Server e2d50a55-…`);
+  } catch (e) {
+    toast(`Live discover error: ${esc(e)}`, true);
+  } finally {
+    hideCarousel();
+    b1.disabled = false; b2.disabled = false;
+  }
+}
+
+/* ─── Copilot Chat & Playbook ─── */
+async function clearChat() {
+  await fetch("/api/chat/clear", {method: "POST"});
+  document.getElementById("chatLog").innerHTML = `<div class="msg-bubble bot"><strong>Conversation cleared.</strong></div>`;
+}
+
+function runPlaybookStep(presetNum) {
+  switchTab("command");
+  const cardMap = {1: "stepCard1", 2: "stepCard2", 3: "stepCard3", 4: "stepCard5", 5: "stepCard6"};
+  document.getElementById("chatInput").value = PRESETS[presetNum];
+  submitChat(new Event("submit"), cardMap[presetNum]);
+}
+
+async function submitChat(e, stepCardId = null) {
+  e.preventDefault();
+  const input = document.getElementById("chatInput");
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+
+  const log = document.getElementById("chatLog");
+  log.innerHTML += `<div class="msg-bubble user">${esc(text)}</div>`;
+  const pendingId = "pending_" + Date.now();
+  log.innerHTML += `<div class="msg-bubble bot" id="${pendingId}">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--cyan);font-size:12.5px;">
+      <span class="mini-spin"></span>
+      <span>Querying Go &amp; Python Synapse MCP servers over stdio…</span>
+    </div>
+  </div>`;
+  log.scrollTop = log.scrollHeight;
+
+  const btn = document.getElementById("sendBtn");
+  btn.disabled = true;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: text})
+    });
+    const data = await res.json();
+    const tracesHtml = (data.tool_traces || []).map(t => {
+      const tagCls = t.server_label.includes("flag") ? "go" : (t.server_label.includes("replay") ? "custom" : "py");
+      return `<details class="trace-item">
+        <summary>
+          <span><span class="srv-tag ${tagCls}">${esc(t.server_label)}</span> &nbsp;<strong>${esc(t.tool_name)}</strong></span>
+          <span style="color:var(--muted);">${t.latency_ms} ms</span>
+        </summary>
+        <pre>Arguments: ${esc(JSON.stringify(t.arguments))}\n\nResponse:\n${esc(JSON.stringify(t.output, null, 2).slice(0, 1800))}</pre>
+      </details>`;
+    }).join("");
+
+    document.getElementById(pendingId).innerHTML =
+      (tracesHtml ? `<div class="trace-stack">${tracesHtml}</div>` : "") +
+      renderMd(data.answer || "");
+    if (stepCardId) {
+      document.getElementById(stepCardId)?.classList.add("done");
+    }
+    await pollState();
+  } catch (err) {
+    document.getElementById(pendingId).innerHTML = `<span style="color:var(--rose);">Error: ${esc(err)}</span>`;
+  } finally {
+    btn.disabled = false;
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+setInterval(pollState, 1300);
+pollState();
+loadDiscoverSource();
+</script>
+</body>
+</html>
