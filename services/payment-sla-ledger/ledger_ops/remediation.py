@@ -5,8 +5,10 @@ from ledger_ops.db import connect_ledger, now_iso, sign_audit_receipt
 
 
 def inspect_stranded_merchant_holds(merchant_ids_csv: str) -> dict:
-    """Inspect active HOLD_STRANDED payment intents and idempotency locks for comma-separated merchant_ids_csv without mutating state."""
-    mids = [m.strip() for m in merchant_ids_csv.split(",") if m.strip()]
+    """Inspect active HOLD_STRANDED payment intents and idempotency locks for comma-separated merchant_ids_csv (or 'ALL' for all stranded holds) without mutating state."""
+    raw = merchant_ids_csv.strip()
+    is_all = raw.upper() == "ALL"
+    mids = [m.strip() for m in raw.split(",") if m.strip()]
     if not mids:
         return {
             "eligible": False,
@@ -15,23 +17,35 @@ def inspect_stranded_merchant_holds(merchant_ids_csv: str) -> dict:
             "stranded_amount_cents": 0,
             "order_ids": [],
         }
-    placeholders = ",".join("?" for _ in mids)
     with connect_ledger() as conn:
-        rows = conn.execute(
-            f"""
-            SELECT order_id, merchant_id, idempotency_key, amount_cents, bank_hold_active
-            FROM payment_intents
-            WHERE merchant_id IN ({placeholders})
-              AND status = 'HOLD_STRANDED'
-            ORDER BY authorized_at ASC
-            """,
-            mids,
-        ).fetchall()
+        if is_all:
+            rows = conn.execute(
+                """
+                SELECT order_id, merchant_id, idempotency_key, amount_cents, bank_hold_active
+                FROM payment_intents
+                WHERE status = 'HOLD_STRANDED'
+                ORDER BY authorized_at ASC
+                """
+            ).fetchall()
+            mids = sorted({r["merchant_id"] for r in rows})
+        else:
+            placeholders = ",".join("?" for _ in mids)
+            rows = conn.execute(
+                f"""
+                SELECT order_id, merchant_id, idempotency_key, amount_cents, bank_hold_active
+                FROM payment_intents
+                WHERE merchant_id IN ({placeholders})
+                  AND status = 'HOLD_STRANDED'
+                ORDER BY authorized_at ASC
+                """,
+                mids,
+            ).fetchall()
 
     total_cents = sum(int(r["amount_cents"]) for r in rows)
     return {
         "eligible": len(rows) > 0,
         "merchant_ids": mids,
+        "merchant_count": len(mids),
         "stranded_count": len(rows),
         "stranded_amount_cents": total_cents,
         "stranded_amount_formatted": f"${total_cents / 100:,.2f}",
@@ -42,22 +56,29 @@ def inspect_stranded_merchant_holds(merchant_ids_csv: str) -> dict:
 
 
 def execute_idempotent_v1_replay(merchant_ids_csv: str) -> dict:
-    """Atomically settle all HOLD_STRANDED orders for comma-separated merchant_ids_csv via v1 idempotent capture replay without double-charging."""
-    mids = [m.strip() for m in merchant_ids_csv.split(",") if m.strip()]
+    """Atomically settle HOLD_STRANDED orders for comma-separated merchant_ids_csv (or 'ALL' for all stranded holds) via v1 idempotent capture replay without double-charging."""
+    raw = merchant_ids_csv.strip()
+    is_all = raw.upper() == "ALL"
+    mids = [m.strip() for m in raw.split(",") if m.strip()]
     if not mids:
         return {"replayed_count": 0, "replayed_amount_cents": 0, "replayed_order_ids": []}
-    placeholders = ",".join("?" for _ in mids)
     ts = now_iso()
     with connect_ledger() as conn:
-        rows = conn.execute(
-            f"""
-            SELECT order_id, amount_cents
-            FROM payment_intents
-            WHERE merchant_id IN ({placeholders})
-              AND status = 'HOLD_STRANDED'
-            """,
-            mids,
-        ).fetchall()
+        if is_all:
+            rows = conn.execute(
+                "SELECT order_id, amount_cents FROM payment_intents WHERE status = 'HOLD_STRANDED'"
+            ).fetchall()
+        else:
+            placeholders = ",".join("?" for _ in mids)
+            rows = conn.execute(
+                f"""
+                SELECT order_id, amount_cents
+                FROM payment_intents
+                WHERE merchant_id IN ({placeholders})
+                  AND status = 'HOLD_STRANDED'
+                """,
+                mids,
+            ).fetchall()
         if not rows:
             return {"replayed_count": 0, "replayed_amount_cents": 0, "replayed_order_ids": []}
         order_ids = [r["order_id"] for r in rows]

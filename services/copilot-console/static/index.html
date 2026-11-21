@@ -1552,8 +1552,8 @@ const PRESETS = {
   1: "Gateway error alerts are firing on both smart_retry_v1 and checkout_gateway_v2. Cross-reference both systems to tell me which flag cohort is actually stranding merchant money in uncaptured holds versus recovering on retry, how much money is stranded, and which Enterprise Tier-1 merchants are breaching or at risk of breaching SLA.",
   2: "Before we reroute or retry failed checkouts for those impacted Enterprise Tier-1 merchants on checkout_gateway_v2, inspect their orders across both systems: which orders already have active customer bank authorization holds that would double-charge customers on a naive retry?",
   3: "Exclude ONLY the impacted Enterprise Tier-1 merchants from checkout_gateway_v2 without turning off the flag globally, and preview a safe hold replay for them.",
-  4: "Now that flag-edge-gateway has been updated via synapse build --discover, exclude the impacted Enterprise Tier-1 merchants from checkout_gateway_v2 immediately, and run a dry-run preview (confirm=False) of replay_stranded_merchant_holds for them.",
-  5: "Confirm: execute replay_stranded_merchant_holds with confirm=True for those excluded Enterprise Tier-1 merchants and give me the SHA-256 recovery receipt."
+  4: "Now that flag-edge-gateway has been updated via synapse build --discover, exclude the impacted Enterprise Tier-1 merchants from checkout_gateway_v2 immediately, and run a dry-run preview (confirm=False, merchant_ids_csv=\"ALL\") of replay_stranded_merchant_holds to preview settling all stranded holds.",
+  5: "Confirm: execute replay_stranded_merchant_holds with confirm=True and merchant_ids_csv=\"ALL\" to settle every stranded hold to $0.00 and give me the signed SHA-256 recovery receipt."
 };
 
 let latestState = null;

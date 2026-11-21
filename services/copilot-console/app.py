@@ -12,7 +12,7 @@ from typing import Any, Literal, Optional
 
 import httpx
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -145,6 +145,42 @@ def create_console_app(
     @app.get("/classic")
     async def classic_ui():
         return FileResponse(STATIC_DIR / "classic.html")
+
+    @app.get("/video")
+    async def watch_video():
+        return HTMLResponse("""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><title>CanaryBrake — Hackathon Submission Video</title>
+<style>
+  body { margin:0; background:#0d0e10; color:#f3f4f6; font-family:Inter,-apple-system,sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:18px; padding:24px; }
+  .bar { width:min(1280px,95vw); display:flex; justify-content:space-between; align-items:center; }
+  video { width:min(1280px,95vw); border-radius:10px; border:1px solid #252a32; box-shadow:0 24px 64px rgba(0,0,0,0.65); background:#000; }
+  a.btn { padding:8px 14px; border-radius:6px; background:#f3f4f6; color:#0d0e10; text-decoration:none; font-size:13px; font-weight:600; }
+  a.ghost { padding:8px 14px; border-radius:6px; border:1px solid #252a32; color:#cbd5e1; text-decoration:none; font-size:13px; }
+</style></head><body>
+  <div class="bar">
+    <div><strong>CanaryBrake — Submission Film</strong> <span style="color:#8a929e;font-size:13px;margin-left:8px;">1920×1080 · 30fps · Studio Voiceover</span></div>
+    <div style="display:flex;gap:8px;">
+      <a class="ghost" href="/">← Live App</a>
+      <a class="btn" href="/video/download" download="CanaryBrake_Hackathon_Submission.mp4">Download MP4 (10.1 MB)</a>
+    </div>
+  </div>
+  <video controls autoplay playsinline src="/video/stream"></video>
+</body></html>""")
+
+    @app.get("/video/stream")
+    async def stream_video():
+        vid = ROOT.parent / "canarybrake_video" / "CanaryBrake_Hackathon_Submission.mp4"
+        if not vid.exists():
+            raise HTTPException(status_code=404, detail="Video file not found")
+        return FileResponse(vid, media_type="video/mp4")
+
+    @app.get("/video/download")
+    async def download_video():
+        vid = ROOT.parent / "canarybrake_video" / "CanaryBrake_Hackathon_Submission.mp4"
+        if not vid.exists():
+            raise HTTPException(status_code=404, detail="Video file not found")
+        return FileResponse(vid, media_type="video/mp4", filename="CanaryBrake_Hackathon_Submission.mp4")
+
 
     @app.get("/health")
     async def health() -> dict:
