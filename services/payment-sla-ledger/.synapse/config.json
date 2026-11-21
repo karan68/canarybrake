@@ -1,0 +1,16 @@
+{
+  "initialized": true,
+  "version": "1.0.0",
+  "mode": "hosted",
+  "created_at": "2026-11-21T17:05:20.685Z",
+  "last_updated": "2026-11-21T17:05:24.660Z",
+  "hosted_servers": {
+    "https://api.synapse.2ndbrainlabs.ai": {
+      "payment-sla-ledger": {
+        "id": "059607eb-feb9-4fa8-874e-907d522e6ebd",
+        "created_at": "2026-11-21T17:05:24.659Z",
+        "updated_at": "2026-11-21T17:05:24.659Z"
+      }
+    }
+  }
+}

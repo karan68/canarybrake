@@ -1,0 +1,33 @@
+{
+  "mcpServers": {
+    "flag-edge-gateway": {
+      "command": "npx",
+      "args": ["-y", "@2ndbrainlabs-ai/synapse-mcp"],
+      "env": {
+        "SYNAPSE_SERVER_ID": "e2d50a55-9ebc-4aee-8a17-b47ced0025aa",
+        "SYNAPSE_API_KEY": "${SYNAPSE_API_KEY}",
+        "SYNAPSE_API_URL": "https://api.synapse.2ndbrainlabs.ai",
+        "ENDPOINT_BASE_URL": "http://127.0.0.1:8081"
+      }
+    },
+    "payment-sla-ledger": {
+      "command": "npx",
+      "args": ["-y", "@2ndbrainlabs-ai/synapse-mcp"],
+      "env": {
+        "SYNAPSE_SERVER_ID": "059607eb-feb9-4fa8-874e-907d522e6ebd",
+        "SYNAPSE_API_KEY": "${SYNAPSE_API_KEY}",
+        "SYNAPSE_API_URL": "https://api.synapse.2ndbrainlabs.ai",
+        "ENDPOINT_BASE_URL": "http://127.0.0.1:8082"
+      }
+    },
+    "replay-stranded-merchant-holds": {
+      "command": "python",
+      "args": [
+        "./services/payment-sla-ledger/replay_stranded_merchant_holds_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "./services/payment-sla-ledger"
+      }
+    }
+  }
+}
