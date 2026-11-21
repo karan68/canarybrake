@@ -1,0 +1,6 @@
+[project]
+name = "payment-sla-ledger"
+version = "0.1.0"
+description = "CanaryBrake Payment Authorization & Merchant SLA Ledger Service"
+requires-python = ">=3.10"
+dependencies = ["fastapi", "uvicorn", "pydantic", "requests", "mcp<2"]
